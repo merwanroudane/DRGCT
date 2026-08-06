@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Price–volume application — drgct</title>
+<meta name="description" content="The application from Section 5 of the paper, reproduced in full: does the daily percentage change in an index level Granger-cause the percentage change in trading volume, and vice ">
+<meta name="author" content="Dr Merwan Roudane">
+<link rel="canonical" href="https://merwanroudane.github.io/DRGCT/finance.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Price–volume application — drgct">
+<meta property="og:description" content="The application from Section 5 of the paper, reproduced in full: does the daily percentage change in an index level Granger-cause the percentage change in trading volume, and vice ">
+<meta property="og:url" content="https://merwanroudane.github.io/DRGCT/finance.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231F4E79'/><text x='50' y='70' font-size='58' font-family='Georgia,serif' fill='white' text-anchor='middle'>D</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="mark">drgct</span>
+    <span class="tagline">Deep-learning based doubly robust test<br>for Granger causality</span>
+  </a>
+  <button class="navtoggle" onclick="document.getElementById('sidebar').classList.toggle('open')">Menu</button>
+  <nav>
+    <div class="group">Start</div>
+    <a href="index.html">Overview</a>
+    <a href="guide.html">Applied guide</a>
+    <div class="group">Method</div>
+    <a href="theory.html">Theory</a>
+    <a href="api.html">API reference</a>
+    <a href="faq.html">FAQ</a>
+    <div class="group">Results</div>
+    <a href="macro.html">US macro application</a>
+    <a href="finance.html" class="active">Price–volume application</a>
+    <a href="simulation.html">Simulation evidence</a>
+  </nav>
+  <div class="ext">
+    <a href="https://github.com/merwanroudane/DRGCT">GitHub repository</a>
+    <a href="https://pypi.org/project/drgct/">PyPI package</a>
+    <a href="https://arxiv.org/abs/2509.15798">The paper (arXiv)</a>
+  </div>
+  <div class="byline">
+    Built and maintained by<br>
+    <strong>Dr Merwan Roudane</strong><br>
+    <a href="mailto:merwanroudane920@gmail.com">merwanroudane920@gmail.com</a><br>
+    <a href="https://github.com/merwanroudane">github.com/merwanroudane</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="content md-body">
+<h1 id="price-and-volume-in-three-markets">Price and volume in three markets</h1>
+<p class="lede">The application from Section 5 of the paper, reproduced in full:
+does the daily percentage change in an index level Granger-cause the percentage
+change in trading volume, and vice versa? Three markets, three overlapping
+three-year sub-samples, ten lag orders, both directions — 180 tests — plus a
+rolling-window extension the paper points to but does not carry out.</p>
+
+<p>Produced by
+<a href="https://github.com/merwanroudane/DRGCT/blob/main/scripts/run_application.py"><code>scripts/run_application.py</code></a>:</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>scripts/run_application.py<span class="w"> </span>--jobs<span class="w"> </span>-1<span class="w"> </span>--rolling<span class="w"> </span>--stability-draws<span class="w"> </span><span class="m">30</span>
+</code></pre></div>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">180</div><div class="l">doubly robust tests in the main grid</div></div>
+  <div class="stat"><div class="v">1257</div><div class="l">daily observations for the S&amp;P 500 — exactly the paper's <i>T</i></div></div>
+  <div class="stat"><div class="v">1–10</div><div class="l">lag orders, in trading days</div></div>
+  <div class="stat"><div class="v">7%</div><div class="l">of direction draws that rejected the headline test — see §5</div></div>
+</div>
+
+<h2 id="1-why-prices-and-volume">1. Why prices and volume</h2>
+<p>Trading volume rises when prices move sharply and falls when they do not; heavy
+volume is often followed by large price moves. The relationship is one of the
+oldest documented regularities in empirical finance (Karpoff, 1987; Gallant,
+Rossi and Tauchen, 1992; Chen, Hong and Stein, 2001), and it is a natural test
+bed for a nonlinear causality test: the mechanism is asymmetric, involves
+thresholds, and operates over several days rather than one.</p>
+<p>Following Section 5 of the paper, both series are transformed to percentage
+changes, and the volume change is divided by ten so the two have a comparable
+scale:</p>
+<div class="eq">
+<code>P(t) = 100 · (Close(t)/Close(t−1) − 1)</code><br>
+<code>V(t) = 100 · (Volume(t)/Volume(t−1) − 1) / 10</code>
+</div>
+
+<h2 id="2-data">2. Data</h2>
+<p>Daily closing levels and volumes over the paper's exact window,
+<strong>27 September 2019 – 26 September 2024</strong>.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Index</th>
+<th>Ticker</th>
+<th>Observations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spx500</code></td>
+<td>S&amp;P 500</td>
+<td><code>^GSPC</code></td>
+<td>1257 — matches the paper's <code>T = 1257</code></td>
+</tr>
+<tr>
+<td><code>csi300</code></td>
+<td>CSI 300 (exchange-traded tracker)</td>
+<td><code>510300.SS</code></td>
+<td>1211</td>
+</tr>
+<tr>
+<td><code>nikkei225</code></td>
+<td>Nikkei 225</td>
+<td><code>^N225</code></td>
+<td>1220</td>
+</tr>
+</tbody>
+</table></div>
+<div class="warn"><strong>These are not the paper's data</strong>
+<p>The paper does not name its vendor. Closing <i>levels</i> are near identical
+across vendors; daily <i>volume</i> is not — and volume dynamics are the whole
+exercise here. For the CSI 300, Yahoo truncates the index series
+(<code>000300.SS</code>) to roughly the last three years, so the largest
+exchange-traded tracker is used instead: genuine exchange turnover, but ETF
+turnover rather than index-constituent turnover. Expect the results below to
+agree with the paper qualitatively in some blocks and not others; §6 sets out
+exactly which.</p></div>
+
+<figure><img loading="lazy" src="assets/figures/fig5_data_overview.png" alt="Figure 1"><figcaption><strong>Figure 1.</strong> Closing levels, volumes, and the transformed series <code>P(t)</code> and <code>V(t)</code> for the three indices.</figcaption></figure>
+
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Statistic</th>
+      <th>SPX 500  $P_t$</th>
+      <th>SPX 500  $V_t$</th>
+      <th>CSI 300  $P_t$</th>
+      <th>CSI 300  $V_t$</th>
+      <th>NI 225  $P_t$</th>
+      <th>NI 225  $V_t$</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Obs.</td>
+      <td>1256.000</td>
+      <td>1256.000</td>
+      <td>1210.000</td>
+      <td>1210.000</td>
+      <td>1219.000</td>
+      <td>1219.000</td>
+    </tr>
+    <tr>
+      <td>Mean</td>
+      <td>0.062</td>
+      <td>0.160</td>
+      <td>0.001</td>
+      <td>0.920</td>
+      <td>0.056</td>
+      <td>0.229</td>
+    </tr>
+    <tr>
+      <td>Median</td>
+      <td>0.095</td>
+      <td>-0.033</td>
+      <td>-0.032</td>
+      <td>-0.101</td>
+      <td>0.090</td>
+      <td>-0.069</td>
+    </tr>
+    <tr>
+      <td>Std. dev.</td>
+      <td>1.340</td>
+      <td>1.865</td>
+      <td>1.158</td>
+      <td>4.897</td>
+      <td>1.353</td>
+      <td>2.249</td>
+    </tr>
+    <tr>
+      <td>Min.</td>
+      <td>-11.984</td>
+      <td>-5.769</td>
+      <td>-8.433</td>
+      <td>-7.004</td>
+      <td>-12.396</td>
+      <td>-5.385</td>
+    </tr>
+    <tr>
+      <td>Max.</td>
+      <td>9.383</td>
+      <td>12.705</td>
+      <td>7.337</td>
+      <td>33.939</td>
+      <td>10.226</td>
+      <td>15.710</td>
+    </tr>
+    <tr>
+      <td>Skewness</td>
+      <td>-0.526</td>
+      <td>1.730</td>
+      <td>-0.116</td>
+      <td>1.836</td>
+      <td>-0.257</td>
+      <td>1.391</td>
+    </tr>
+    <tr>
+      <td>Kurtosis</td>
+      <td>16.293</td>
+      <td>11.525</td>
+      <td>8.007</td>
+      <td>9.152</td>
+      <td>13.431</td>
+      <td>7.773</td>
+    </tr>
+    <tr>
+      <td>Jarque-Bera</td>
+      <td>9304.744</td>
+      <td>4430.385</td>
+      <td>1266.828</td>
+      <td>2587.604</td>
+      <td>5539.850</td>
+      <td>1550.387</td>
+    </tr>
+    <tr>
+      <td>JB p-value</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>Ljung-Box(10)</td>
+      <td>247.569</td>
+      <td>152.737</td>
+      <td>5.312</td>
+      <td>135.051</td>
+      <td>12.399</td>
+      <td>115.812</td>
+    </tr>
+    <tr>
+      <td>LB p-value</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.869</td>
+      <td>0.000</td>
+      <td>0.259</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>Ljung-Box$^2$(10)</td>
+      <td>1780.124</td>
+      <td>60.641</td>
+      <td>79.513</td>
+      <td>1.479</td>
+      <td>423.691</td>
+      <td>10.567</td>
+    </tr>
+    <tr>
+      <td>LB$^2$ p-value</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.999</td>
+      <td>0.000</td>
+      <td>0.392</td>
+    </tr>
+    <tr>
+      <td>ADF p-value</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>KPSS p-value</td>
+      <td>0.100</td>
+      <td>0.100</td>
+      <td>0.100</td>
+      <td>0.100</td>
+      <td>0.100</td>
+      <td>0.100</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 1.</strong> Descriptive statistics for the six transformed series. All are strongly leptokurtic and serially correlated in the square — the usual daily-financial-data signature.</figcaption></figure>
+
+<h2 id="3-results">3. Results</h2>
+<p>Hyper-parameters as in the paper: <code>G = 10</code>, <code>L = 20</code>, <code>M = 20</code>, <code>B = 999</code>,
+Rademacher multipliers, 5% level.</p>
+<figure><img loading="lazy" src="assets/figures/fig6_pvalue_heatmap.png" alt="Figure 2"><figcaption><strong>Figure 2.</strong> Bootstrap p-values for every index, sub-sample and lag order, one panel per direction. Outlined cells reject at 5%.</figcaption></figure>
+
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Causality direction</th>
+      <th>Period</th>
+      <th>SPX 500</th>
+      <th>CSI 300</th>
+      <th>NI 225</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>2019-2022</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="tick">✓</span></td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>2020-2023</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="tick">✓</span></td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>2021-2024</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="tick">✓</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>2019-2022</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>2020-2023</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>2021-2024</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 2.</strong> Detection summary, in the layout of the paper's Table 5. A tick marks rejection at 5% for at least one lag order between 1 and 10.</figcaption></figure>
+
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Causality direction</th>
+      <th>Index</th>
+      <th>Period</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>10</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>CSI 300</td>
+      <td>2019-2022</td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>CSI 300</td>
+      <td>2020-2023</td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>CSI 300</td>
+      <td>2021-2024</td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>NI 225</td>
+      <td>2019-2022</td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>NI 225</td>
+      <td>2020-2023</td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>NI 225</td>
+      <td>2021-2024</td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>SPX 500</td>
+      <td>2019-2022</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>SPX 500</td>
+      <td>2020-2023</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>SPX 500</td>
+      <td>2021-2024</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>CSI 300</td>
+      <td>2019-2022</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="tick">✓</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>CSI 300</td>
+      <td>2020-2023</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>CSI 300</td>
+      <td>2021-2024</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>NI 225</td>
+      <td>2019-2022</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>NI 225</td>
+      <td>2020-2023</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>NI 225</td>
+      <td>2021-2024</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>SPX 500</td>
+      <td>2019-2022</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>SPX 500</td>
+      <td>2020-2023</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>SPX 500</td>
+      <td>2021-2024</td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+      <td><span class="cross">✗</span></td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 3.</strong> Decisions at each lag order, the layout of the paper's Table 6.</figcaption></figure>
+
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Causality direction</th>
+      <th>Index</th>
+      <th>Period</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>10</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>CSI 300</td>
+      <td>2019-2022</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.113</td>
+      <td>0.000</td>
+      <td>0.305</td>
+      <td>0.453</td>
+      <td>0.063</td>
+      <td>0.332</td>
+      <td>0.814</td>
+      <td>0.902</td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>CSI 300</td>
+      <td>2020-2023</td>
+      <td>0.001</td>
+      <td>0.000</td>
+      <td>0.011</td>
+      <td>0.088</td>
+      <td>0.225</td>
+      <td>0.494</td>
+      <td>0.600</td>
+      <td>0.201</td>
+      <td>0.958</td>
+      <td>0.497</td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>CSI 300</td>
+      <td>2021-2024</td>
+      <td>0.000</td>
+      <td>0.001</td>
+      <td>0.000</td>
+      <td>0.114</td>
+      <td>0.079</td>
+      <td>0.004</td>
+      <td>0.920</td>
+      <td>0.178</td>
+      <td>0.336</td>
+      <td>0.442</td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>NI 225</td>
+      <td>2019-2022</td>
+      <td>0.029</td>
+      <td>0.063</td>
+      <td>0.003</td>
+      <td>0.132</td>
+      <td>0.463</td>
+      <td>0.032</td>
+      <td>0.474</td>
+      <td>0.406</td>
+      <td>0.766</td>
+      <td>0.631</td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>NI 225</td>
+      <td>2020-2023</td>
+      <td>0.000</td>
+      <td>0.121</td>
+      <td>0.009</td>
+      <td>0.164</td>
+      <td>0.422</td>
+      <td>0.591</td>
+      <td>0.758</td>
+      <td>0.117</td>
+      <td>0.085</td>
+      <td>0.358</td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>NI 225</td>
+      <td>2021-2024</td>
+      <td>0.040</td>
+      <td>0.000</td>
+      <td>0.290</td>
+      <td>0.755</td>
+      <td>0.166</td>
+      <td>0.047</td>
+      <td>0.026</td>
+      <td>0.508</td>
+      <td>0.749</td>
+      <td>0.573</td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>SPX 500</td>
+      <td>2019-2022</td>
+      <td>0.078</td>
+      <td>0.229</td>
+      <td>0.249</td>
+      <td>0.206</td>
+      <td>0.771</td>
+      <td>0.698</td>
+      <td>0.209</td>
+      <td>0.131</td>
+      <td>0.050</td>
+      <td>0.227</td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>SPX 500</td>
+      <td>2020-2023</td>
+      <td>0.213</td>
+      <td>0.407</td>
+      <td>0.371</td>
+      <td>0.737</td>
+      <td>0.940</td>
+      <td>0.429</td>
+      <td>0.903</td>
+      <td>0.775</td>
+      <td>0.982</td>
+      <td>0.318</td>
+    </tr>
+    <tr>
+      <td>P_t -> V_t</td>
+      <td>SPX 500</td>
+      <td>2021-2024</td>
+      <td>0.584</td>
+      <td>0.796</td>
+      <td>0.763</td>
+      <td>0.809</td>
+      <td>0.566</td>
+      <td>0.773</td>
+      <td>0.890</td>
+      <td>0.985</td>
+      <td>0.838</td>
+      <td>0.109</td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>CSI 300</td>
+      <td>2019-2022</td>
+      <td>0.317</td>
+      <td>0.366</td>
+      <td>0.006</td>
+      <td>0.360</td>
+      <td>0.225</td>
+      <td>0.620</td>
+      <td>0.623</td>
+      <td>0.322</td>
+      <td>0.977</td>
+      <td>0.053</td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>CSI 300</td>
+      <td>2020-2023</td>
+      <td>0.433</td>
+      <td>0.327</td>
+      <td>0.114</td>
+      <td>0.307</td>
+      <td>0.798</td>
+      <td>0.875</td>
+      <td>0.996</td>
+      <td>0.382</td>
+      <td>0.089</td>
+      <td>0.602</td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>CSI 300</td>
+      <td>2021-2024</td>
+      <td>0.126</td>
+      <td>0.109</td>
+      <td>0.474</td>
+      <td>0.310</td>
+      <td>0.427</td>
+      <td>0.928</td>
+      <td>0.059</td>
+      <td>0.206</td>
+      <td>0.487</td>
+      <td>0.249</td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>NI 225</td>
+      <td>2019-2022</td>
+      <td>0.249</td>
+      <td>0.919</td>
+      <td>0.277</td>
+      <td>0.980</td>
+      <td>0.573</td>
+      <td>0.310</td>
+      <td>0.405</td>
+      <td>0.926</td>
+      <td>0.125</td>
+      <td>0.560</td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>NI 225</td>
+      <td>2020-2023</td>
+      <td>0.561</td>
+      <td>0.941</td>
+      <td>0.856</td>
+      <td>0.949</td>
+      <td>0.835</td>
+      <td>0.339</td>
+      <td>0.924</td>
+      <td>0.449</td>
+      <td>0.802</td>
+      <td>0.912</td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>NI 225</td>
+      <td>2021-2024</td>
+      <td>0.791</td>
+      <td>0.385</td>
+      <td>0.462</td>
+      <td>0.460</td>
+      <td>0.903</td>
+      <td>0.617</td>
+      <td>0.777</td>
+      <td>0.457</td>
+      <td>0.806</td>
+      <td>0.811</td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>SPX 500</td>
+      <td>2019-2022</td>
+      <td>0.146</td>
+      <td>0.844</td>
+      <td>0.520</td>
+      <td>0.833</td>
+      <td>0.232</td>
+      <td>0.686</td>
+      <td>0.246</td>
+      <td>0.478</td>
+      <td>0.601</td>
+      <td>0.733</td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>SPX 500</td>
+      <td>2020-2023</td>
+      <td>0.679</td>
+      <td>0.402</td>
+      <td>0.784</td>
+      <td>0.314</td>
+      <td>0.473</td>
+      <td>0.392</td>
+      <td>0.688</td>
+      <td>0.630</td>
+      <td>0.472</td>
+      <td>0.680</td>
+    </tr>
+    <tr>
+      <td>V_t -> P_t</td>
+      <td>SPX 500</td>
+      <td>2021-2024</td>
+      <td>0.382</td>
+      <td>0.318</td>
+      <td>0.784</td>
+      <td>0.777</td>
+      <td>0.517</td>
+      <td>0.453</td>
+      <td>0.782</td>
+      <td>0.540</td>
+      <td>0.989</td>
+      <td>0.623</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 4.</strong> The same grid with the bootstrap p-values themselves.</figcaption></figure>
+
+<h3 id="what-we-find">What we find</h3>
+<p><strong>CSI 300 — prices drive volumes, decisively.</strong> Rejection at lags 1–3 in <em>every</em>
+sub-sample, with <code>p ≤ 0.011</code> throughout, strengthening over time (in 2021–2024,
+<code>p &lt; 0.001</code> at lags 1, 2, 3 and 6). The reverse direction rejects at one lag in
+one sub-sample out of thirty tests — chance.</p>
+<p><strong>Nikkei 225 — prices drive volumes at short horizons.</strong> Rejection at lags 1
+and 3 in all three sub-samples. Volumes never predict prices at any lag in any
+sub-sample.</p>
+<p><strong>S&amp;P 500 — nothing, in either direction, at any lag.</strong></p>
+<p>The common pattern across the two markets where anything is detectable —
+prices lead volumes, volumes do not lead prices — is the paper's headline
+conclusion and matches what the price–volume literature would predict.</p>
+<figure><img loading="lazy" src="assets/figures/fig7_lagprofile_csi300_p2v.png" alt="Figure 3"><figcaption><strong>Figure 3.</strong> CSI 300, 2021–2024, prices to volumes: the p-value against the lag order. The effect is concentrated at one to three days, with a revival at six.</figcaption></figure>
+
+<h2 id="4-a-rolling-window">4. A rolling window</h2>
+<p>The paper's three overlapping sub-samples are a coarse way of asking whether
+causality is stable. Sliding a fixed window through calendar time answers the
+sharper question: <em>when</em> does it switch on?</p>
+<figure><img loading="lazy" src="assets/figures/fig12_rolling_spx500.png" alt="Figure 4"><figcaption><strong>Figure 4.</strong> Rolling DRGCT for the S&amp;P 500: 750-day windows advanced one month at a time, both directions, lag 5. Consecutive windows overlap by 97%, so read this as a description of instability, not as 25 independent tests. Nothing sustained appears.</figcaption></figure>
+
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">drgct.applications</span><span class="w"> </span><span class="kn">import</span> <span class="n">rolling_causality</span>
+<span class="n">roll</span> <span class="o">=</span> <span class="n">rolling_causality</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span>
+                         <span class="n">dates</span><span class="o">=</span><span class="n">pv</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="5-the-headline-test-does-not-survive-its-robustness-check">5. The headline test does not survive its robustness check</h2>
+<p>The single most significant cell in the S&amp;P 500 block was <code>P → V</code> at lag 10 in
+2021–2024, where one seed produced <code>p = 0.008</code>. Re-running it across thirty
+independent draws of the <code>L = 20</code> evaluation directions tells a different
+story.</p>
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Median p</th>
+      <th>Mean p</th>
+      <th>5th pct</th>
+      <th>95th pct</th>
+      <th>Share rejecting</th>
+      <th>Merged p (2x median)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0.5215</td>
+      <td>0.5561</td>
+      <td>0.0481</td>
+      <td>0.9739</td>
+      <td>0.067</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 5.</strong> Thirty independent draws of the direction pairs and of the network initialisation, data held fixed.</figcaption></figure>
+
+<p>The median p-value is <strong>0.52</strong> and only <strong>7%</strong> of draws reject. The <code>p = 0.008</code>
+was a lucky seed. Reporting it alone would have been misleading.</p>
+<figure><img loading="lazy" src="assets/figures/fig13_stability.png" alt="Figure 5"><figcaption><strong>Figure 5.</strong> The p-value distribution across thirty draws — close to uniform on [0,1], which is what you see when the null is true.</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/fig9_empirical_process.png" alt="Figure 6"><figcaption><strong>Figure 6.</strong> Why: the real and imaginary parts of the empirical process at each of the twenty directions. Exactly one direction escapes the bootstrap envelope. Contrast this with the <a href="https://github.com/merwanroudane/DRGCT/blob/main/macro.html#6-is-the-headline-a-lucky-draw">macro headline</a>, where many directions escape and all thirty draws reject.</figcaption></figure>
+
+<div class="good"><strong>The lesson</strong>
+<p>This is the clearest demonstration on the site of why
+<code>drgc_stability</code> exists. Two honest analysts using different seeds
+would have reached opposite conclusions from the same data. Raise <code>L</code>,
+report the distribution, and quote the merged p-value.</p></div>
+
+<h2 id="6-where-this-agrees-with-the-paper-and-where-it-does-not">6. Where this agrees with the paper, and where it does not</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Direction</th>
+<th>Index</th>
+<th style="text-align: center;">Paper (Table 5)</th>
+<th style="text-align: center;">Here</th>
+<th style="text-align: center;">Agrees?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>P → V</code></td>
+<td>CSI 300</td>
+<td style="text-align: center;">✓ in 2020-23, 2021-24</td>
+<td style="text-align: center;">✓ in all three</td>
+<td style="text-align: center;">yes, stronger here</td>
+</tr>
+<tr>
+<td><code>P → V</code></td>
+<td>NI 225</td>
+<td style="text-align: center;">✗ everywhere</td>
+<td style="text-align: center;">✓ in all three</td>
+<td style="text-align: center;"><strong>no</strong></td>
+</tr>
+<tr>
+<td><code>P → V</code></td>
+<td>SPX 500</td>
+<td style="text-align: center;">✓ in all three</td>
+<td style="text-align: center;">✗ everywhere</td>
+<td style="text-align: center;"><strong>no</strong></td>
+</tr>
+<tr>
+<td><code>V → P</code></td>
+<td>CSI 300</td>
+<td style="text-align: center;">✓ in 2021-24 only</td>
+<td style="text-align: center;">✓ in 2019-22 only</td>
+<td style="text-align: center;">partly</td>
+</tr>
+<tr>
+<td><code>V → P</code></td>
+<td>NI 225</td>
+<td style="text-align: center;">✗ everywhere</td>
+<td style="text-align: center;">✗ everywhere</td>
+<td style="text-align: center;">yes</td>
+</tr>
+<tr>
+<td><code>V → P</code></td>
+<td>SPX 500</td>
+<td style="text-align: center;">✗ everywhere</td>
+<td style="text-align: center;">✗ everywhere</td>
+<td style="text-align: center;">yes</td>
+</tr>
+</tbody>
+</table></div>
+<p>Four of six blocks agree. The two that do not are a data story, not an
+estimator story. A plain linear VAR <em>F</em>-test on these same series finds
+<code>P → V</code> strongly significant for the CSI 300 in every sub-sample (<code>p ≤ 0.0009</code>
+at lag 1) and never significant for the Nikkei 225 or the S&amp;P 500 — so the
+CSI 300 and S&amp;P 500 findings here are what <em>this</em> data says, linear or
+nonlinear. Where the DRGCT adds value is the Nikkei 225, where it detects
+short-lag causality that the linear test misses entirely.</p>
+<p><strong>If you have the paper's data</strong>, drop your CSVs into <code>src/drgct/data/</code> with
+<code>Date, Close, Volume</code> columns and re-run the script. No code changes needed.</p>
+<h2 id="7-diagnostics-for-a-single-reported-test">7. Diagnostics for a single reported test</h2>
+<figure><img loading="lazy" src="assets/figures/fig8_bootstrap_null.png" alt="Figure 7"><figcaption><strong>Figure 7.</strong> The bootstrap null distribution with the observed statistic and the 10/5/1% critical values. Put this beside any single test you report.</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/fig10_mdn_fit.png" alt="Figure 8"><figcaption><strong>Figure 8.</strong> Mixture density network fit: pooled draws from the estimated conditional density against the empirical marginal of the lagged cause.</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/fig11_training_curves.png" alt="Figure 9"><figcaption><strong>Figure 9.</strong> MLP training loss and MDN negative log-likelihood. Both are still declining at the epoch cap here, which means the networks are mildly under-trained at lag 10 — raise <code>epochs</code>. The package now emits a warning when this happens.</figcaption></figure>
+
+<h2 id="references">References</h2>
+<ul>
+<li>Chen, J., Hong, H. and Stein, J. C. (2001). Forecasting crashes: trading volume, past returns, and conditional skewness in stock prices. <em>Journal of Financial Economics</em> 61, 345–381.</li>
+<li>Copeland, T. E. (1976). A model of asset trading under the assumption of sequential information arrival. <em>The Journal of Finance</em> 31, 1149–1168.</li>
+<li>Gallant, A. R., Rossi, P. E. and Tauchen, G. (1992). Stock prices and volume. <em>The Review of Financial Studies</em> 5, 199–242.</li>
+<li>Hui, Y., Liu, C. and Song, X. (2025). <em>Deep learning based doubly robust test for Granger causality.</em> <a href="https://arxiv.org/abs/2509.15798">arXiv:2509.15798</a>.</li>
+<li>Karpoff, J. M. (1987). The relation between price changes and trading volume: a survey. <em>Journal of Financial and Quantitative Analysis</em> 22, 109–126.</li>
+</ul>
+    <div class="pagefoot">
+      <div>
+        <strong>drgct 1.0.0</strong> · MIT licence · © 2026 Dr Merwan Roudane
+      </div>
+      <div>
+        <a href="https://github.com/merwanroudane/DRGCT">Source</a> ·
+        <a href="https://pypi.org/project/drgct/">PyPI</a> ·
+        <a href="https://arxiv.org/abs/2509.15798">Paper</a> ·
+        <a href="https://github.com/merwanroudane/DRGCT/issues">Report an issue</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<aside class="toc"><div class="group">On this page</div>
+  <a href="#1-why-prices-and-volume">1. Why prices and volume</a>
+  <a href="#2-data">2. Data</a>
+  <a href="#3-results">3. Results</a>
+  <a href="#what-we-find" class="h3">What we find</a>
+  <a href="#4-a-rolling-window">4. A rolling window</a>
+  <a href="#5-the-headline-test-does-not-survive-its-robustness-check">5. The headline test does not survive its robustness check</a>
+  <a href="#6-where-this-agrees-with-the-paper-and-where-it-does-not">6. Where this agrees with the paper, and where it does not</a>
+  <a href="#7-diagnostics-for-a-single-reported-test">7. Diagnostics for a single reported test</a>
+  <a href="#references">References</a>
+</aside>
+
+</div>
+</body>
+</html>

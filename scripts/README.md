@@ -41,6 +41,39 @@ Key options: `--indices --periods --lags -B -G -L -M --alpha --jobs --seed
 --outdir --stability-draws --rolling --roll-index --roll-window --roll-step
 --roll-lag`.
 
+## `run_macro_application.py` — US macroeconomics
+
+Eight monthly FRED series, 1959–2025. Six relations, both directions, lag
+orders 1–18 months, a Great Inflation versus Great Moderation split, a
+three-way comparison against a linear VAR *F*-test and the smoothing benchmark,
+and a direction-draw stability check. Writes to `results/macro/`.
+
+```bash
+python scripts/run_macro_application.py --jobs -1
+python scripts/run_macro_application.py --quick
+python scripts/run_macro_application.py --lags 1 3 6 12 --skip-subsamples
+```
+
+Key options: `--lags --sub-lags -B -G -L -M --alpha --jobs --seed
+--stability-draws --skip-subsamples --outdir`.
+
+`-L` defaults to 60 rather than the paper's 20, because at lag 18 the
+conditioning set has 36 dimensions and twenty random directions cover it far
+too thinly.
+
+## `build_site.py` — the documentation website
+
+Converts `site/pages/*.md` and `docs/*.md` into the static site served by
+GitHub Pages from `/docs`, copying every result figure into `docs/assets/`.
+Tables and figures are embedded from the committed run output with
+`{{table: ...}}` and `{{figure: ...}}` directives, so nothing on the site is
+retyped by hand.
+
+```bash
+python scripts/build_site.py
+python scripts/build_site.py --serve      # preview on http://localhost:8000
+```
+
 ## Notes
 
 * Both scripts guard their entry point with `if __name__ == "__main__":`,

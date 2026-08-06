@@ -1,0 +1,13 @@
+Causality direction,Index,Period,1,3,6,9,12,18
+CPI inflation -> Fed funds rate,MP to prices,Full sample,0.672,0.079,0.304,0.246,0.811,0.296
+CPI inflation -> M2 money growth,Money to prices,Full sample,0.144,0.019,0.814,0.268,0.497,0.997
+CPI inflation -> WTI oil price,Oil to prices,Full sample,0.291,0.716,0.011,0.187,0.975,0.801
+Fed funds rate -> CPI inflation,MP to prices,Full sample,0.143,0.059,0.106,0.431,0.089,0.56
+Fed funds rate -> Industrial production,MP to output,Full sample,0.002,0.217,0.104,0.477,0.559,0.616
+Industrial production -> Fed funds rate,MP to output,Full sample,0.283,0.455,0.105,0.407,0.735,0.407
+Industrial production -> Unemployment rate,Output to unemployment,Full sample,0.0,0.005,0.037,0.647,0.207,0.165
+Industrial production -> WTI oil price,Oil to output,Full sample,0.702,0.241,0.224,0.211,0.75,0.833
+M2 money growth -> CPI inflation,Money to prices,Full sample,0.022,0.105,0.013,0.988,0.173,0.929
+Unemployment rate -> Industrial production,Output to unemployment,Full sample,0.0,0.097,0.374,0.449,0.014,0.51
+WTI oil price -> CPI inflation,Oil to prices,Full sample,0.0,0.0,0.0,0.349,0.584,0.036
+WTI oil price -> Industrial production,Oil to output,Full sample,0.02,0.214,0.303,0.267,0.062,0.64

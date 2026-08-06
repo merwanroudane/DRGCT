@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theory — drgct</title>
+<meta name="description" content="An equation-by-equation map between Hui, Liu and Song (2025), arXiv:2509.15798v2, and the drgct source. Read this if you need to verify that the implementation is faithful, or if y">
+<meta name="author" content="Dr Merwan Roudane">
+<link rel="canonical" href="https://merwanroudane.github.io/DRGCT/theory.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Theory — drgct">
+<meta property="og:description" content="An equation-by-equation map between Hui, Liu and Song (2025), arXiv:2509.15798v2, and the drgct source. Read this if you need to verify that the implementation is faithful, or if y">
+<meta property="og:url" content="https://merwanroudane.github.io/DRGCT/theory.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231F4E79'/><text x='50' y='70' font-size='58' font-family='Georgia,serif' fill='white' text-anchor='middle'>D</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="mark">drgct</span>
+    <span class="tagline">Deep-learning based doubly robust test<br>for Granger causality</span>
+  </a>
+  <button class="navtoggle" onclick="document.getElementById('sidebar').classList.toggle('open')">Menu</button>
+  <nav>
+    <div class="group">Start</div>
+    <a href="index.html">Overview</a>
+    <a href="guide.html">Applied guide</a>
+    <div class="group">Method</div>
+    <a href="theory.html" class="active">Theory</a>
+    <a href="api.html">API reference</a>
+    <a href="faq.html">FAQ</a>
+    <div class="group">Results</div>
+    <a href="macro.html">US macro application</a>
+    <a href="finance.html">Price–volume application</a>
+    <a href="simulation.html">Simulation evidence</a>
+  </nav>
+  <div class="ext">
+    <a href="https://github.com/merwanroudane/DRGCT">GitHub repository</a>
+    <a href="https://pypi.org/project/drgct/">PyPI package</a>
+    <a href="https://arxiv.org/abs/2509.15798">The paper (arXiv)</a>
+  </div>
+  <div class="byline">
+    Built and maintained by<br>
+    <strong>Dr Merwan Roudane</strong><br>
+    <a href="mailto:merwanroudane920@gmail.com">merwanroudane920@gmail.com</a><br>
+    <a href="https://github.com/merwanroudane">github.com/merwanroudane</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="content md-body">
+<h1 id="from-the-paper-to-the-code">From the paper to the code</h1>
+<p>An equation-by-equation map between Hui, Liu and Song (2025),
+<a href="https://arxiv.org/abs/2509.15798">arXiv:2509.15798v2</a>, and the <code>drgct</code>
+source. Read this if you need to verify that the implementation is faithful,
+or if you want to extend it.</p>
+<hr />
+<h2 id="0-notation">0. Notation</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Paper</th>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{(X_t, Y_t)}_{t=1}^n</code></td>
+<td><code>x</code>, <code>y</code></td>
+<td>The bivariate series.</td>
+</tr>
+<tr>
+<td><code>p</code>, <code>q</code></td>
+<td><code>p</code>, <code>q</code> (or <code>lag</code> when equal)</td>
+<td>Lag orders of the cause and the effect.</td>
+</tr>
+<tr>
+<td><code>X_{t−1} = (X_{t−1},…,X_{t−p})'</code></td>
+<td><code>design.xlag[t]</code></td>
+<td><code>LagDesign.xlag</code>, shape <code>(n_eff, p)</code>.</td>
+</tr>
+<tr>
+<td><code>Y_{t−1} = (Y_{t−1},…,Y_{t−q})'</code></td>
+<td><code>design.ylag[t]</code></td>
+<td><code>LagDesign.ylag</code>, shape <code>(n_eff, q)</code>.</td>
+</tr>
+<tr>
+<td><code>W_{t−1} = (X_{t−1}', Y_{t−1}')'</code></td>
+<td><code>design.w</code></td>
+<td>shape <code>(n_eff, p+q)</code>.</td>
+</tr>
+<tr>
+<td><code>n − q</code></td>
+<td><code>design.n_eff</code></td>
+<td>Effective sample.</td>
+</tr>
+<tr>
+<td><code>m(Y_{t−1}) = E[Y_t \| Y_{t−1}]</code></td>
+<td><code>mean_fit.fitted</code></td>
+<td>MLP output.</td>
+</tr>
+<tr>
+<td><code>φ(ν \| Y_{t−1}) = E[e^{iν'X_{t−1}} \| Y_{t−1}]</code></td>
+<td><code>phi_hat</code></td>
+<td>MDN Monte-Carlo average.</td>
+</tr>
+<tr>
+<td><code>w = (μ, ν)</code></td>
+<td><code>mu</code>, <code>nu</code></td>
+<td>Random directions, shapes <code>(L, q)</code> and <code>(L, p)</code>.</td>
+</tr>
+<tr>
+<td><code>G, L, M, B</code></td>
+<td><code>G, L, M, B</code></td>
+<td>Mixture components, directions, pseudo-samples, bootstrap draws.</td>
+</tr>
+<tr>
+<td><code>ξ_t</code></td>
+<td><code>xi</code></td>
+<td>Bootstrap multipliers.</td>
+</tr>
+</tbody>
+</table></div>
+<p>The lag bookkeeping lives in <code>drgct.utils.build_lag_design</code>. For
+<code>t = q+1,…,n</code> (1-based), i.e. <code>t = max(p,q),…,n−1</code> in 0-based Python, it
+stacks <code>y[t]</code>, <code>y[t−1..t−q]</code> and <code>x[t−1..t−p]</code>. <code>tests/test_utils.py::test_lag_design_alignment</code>
+pins the alignment exactly.</p>
+<hr />
+<h2 id="1-the-markov-property-equation-1">1. The Markov property, equation (1)</h2>
+<blockquote>
+<p><code>P(X_t ≤ x, Y_t ≤ y | F_{t−1}) = P(X_t ≤ x, Y_t ≤ y | W_{t−1})</code></p>
+</blockquote>
+<p>This is a <em>maintained assumption</em>, not something the code tests: it says the
+first <code>p</code> lags of <code>X</code> and the first <code>q</code> lags of <code>Y</code> exhaust the relevant
+history. In practice it is the reason to choose <code>p</code> and <code>q</code> generously —
+which is precisely what the DRGCT makes affordable.</p>
+<p><strong>Code:</strong> nothing to implement; documented in <code>drgct.core</code>'s module docstring
+and enforced by the user's choice of <code>p, q</code>.</p>
+<hr />
+<h2 id="2-the-null-hypothesis">2. The null hypothesis</h2>
+<h3 id="equation-2-conditional-moment-form">Equation (2) — conditional moment form</h3>
+<blockquote>
+<p><code>H0 : E[Y_t − m(Y_{t−1}) | W_{t−1}] = 0</code> a.s.</p>
+</blockquote>
+<h3 id="equation-3-after-stinchcombe-and-white-1998">Equation (3) — after Stinchcombe and White (1998)</h3>
+<blockquote>
+<p><code>H0 : E[(Y_t − m(Y_{t−1})) e^{i w′W_{t−1}}] = 0</code> for all <code>w ∈ W</code></p>
+</blockquote>
+<p><code>φ(W, w) = exp(i w′W)</code> is <em>generically comprehensively revealing</em> (GCR): if
+the conditional moment restriction fails, the unconditional moment is non-zero
+for <strong>every</strong> <code>w</code> outside a set of measure zero. That is why a finite random
+sample of <code>L</code> directions retains consistency, and why <code>W</code> can be any compact
+set with non-empty interior. Indicator-type <em>comprehensively revealing</em> (CR)
+alternatives such as <code>1(W_{t−1} ≤ w)</code> would require <code>W</code> to be all of <code>R^{p+q}</code>.</p>
+<p><strong>Code:</strong> the choice of GCR family is hard-wired as the complex exponential;
+<code>w_lower</code>/<code>w_upper</code> set the compact box.</p>
+<h3 id="equation-6-the-doubly-robust-form">Equation (6) — the doubly robust form</h3>
+<blockquote>
+<p><code>H0 : E[(Y_t − m(Y_{t−1})) e^{i μ′Y_{t−1}} (e^{i ν′X_{t−1}} − φ(ν | Y_{t−1}))] = 0</code></p>
+</blockquote>
+<p>Proposition 1 of the paper establishes that (3) and (6) define the same null
+and the same alternative. Under <code>H0</code>, <code>E[Y_t − m(Y_{t−1}) | W_{t−1}] = 0</code>, so
+conditioning on <code>W_{t−1}</code> kills the whole expression; conversely, if (6) holds
+for all <code>(μ, ν)</code>, the GCR property forces the conditional moment to vanish.</p>
+<p><strong>Why bother.</strong> Write <code>Δm = m̂ − m</code> and <code>Δφ = φ̂ − φ</code>. In the <em>naive</em> process
+(5) the leading estimation term is <code>(n−q)^{−1/2} Σ_t Δm(Y_{t−1}) e^{i w′W_{t−1}}</code>,
+which is <code>O_p(√n · ‖Δm‖)</code> and needs <code>‖Δm‖ = o(n^{−1/2})</code> — faster than any
+deep-network rate in Lemmas 1–2. In the doubly robust process (8) the same
+term is multiplied by <code>(e^{iν′X_{t−1}} − φ̂)</code>, whose conditional mean given
+<code>Y_{t−1}</code> is <code>−Δφ</code>. The bias therefore scales with <code>√n · ‖Δm‖ · ‖Δφ‖</code>, and
+Assumption 7 (<code>‖Δm‖, ‖Δφ‖ = O(n^{−κ₀})</code> with <code>κ₀ &gt; 1/4</code>) makes that <code>o(1)</code>.
+Two "too slow" estimators multiply into a fast enough product.</p>
+<p><strong>Code:</strong> <code>drgct/core.py</code>, the <code>b</code> array —</p>
+<div class="codehilite"><pre><span></span><code><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">xlag_s</span> <span class="o">@</span> <span class="n">nu</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">-</span> <span class="n">phi_hat</span>        <span class="c1"># doubly robust</span>
+<span class="c1"># with doubly_robust=False, phi_hat is identically zero -&gt; the naive process (5)</span>
+</code></pre></div>
+
+<hr />
+<h2 id="3-estimation-steps-1-and-2-of-algorithm-1">3. Estimation — Steps 1 and 2 of Algorithm 1</h2>
+<h3 id="step-1-the-conditional-mean">Step 1: the conditional mean</h3>
+<blockquote>
+<p>Reorganise into <code>{Y_t, Y_{t−1}}_{t=q+1}^n</code>, train an MLP with <code>Y_{t−1}</code> as
+covariates and <code>Y_t</code> as response.</p>
+</blockquote>
+<p><strong>Rates.</strong> Lemma 1 (bounded support, Assumption 2) and Lemma 2 (sub-Gaussian
+<code>Y</code>, Assumption 3, following Brown 2024) give, for width
+<code>H_n ≍ n^{q/(2(β₀+q))} log²n</code> and depth <code>L_n ≍ log n</code>,</p>
+<div class="codehilite"><pre><span></span><code>E_n (m̂ − m)² ≤ C ( n^{−β₀/(β₀+q)} log⁹n + log n · log log n / n )
+</code></pre></div>
+
+<p>with high probability, where <code>β₀</code> is the Sobolev smoothness of Assumption 4.
+Note the exponent: the rate degrades in <code>q</code>, which is exactly the curse of
+dimensionality — but only in the <em>first-stage</em> estimator, whose error is
+squared away by double robustness.</p>
+<p><strong>Code:</strong> <code>drgct/nets.py</code></p>
+<ul>
+<li><code>MLP(d_in, width, depth, dropout)</code> — ReLU network <code>R^q → R</code>.</li>
+<li><code>theory_width(n, q, beta0)</code> implements <code>n^{q/(2(β₀+q))} log²n</code>;
+  <code>theory_depth(n)</code> implements <code>round(log n)</code>; select them with
+  <code>MLPConfig(width="theory", depth="theory")</code>.</li>
+<li><code>paper_width(lag)</code> implements the <code>H_n = 5·lag</code> used in Sections 4–5, with
+  <code>L_n = 1</code>. This is the default (<code>width="paper"</code>).</li>
+<li><code>fit_conditional_mean</code> trains by Adam on the <code>L2</code> (or smooth-<code>L1</code>) loss and
+  returns the <strong>in-sample</strong> fitted values. No sample splitting and no
+  cross-fitting, matching Section 1: <em>"our proposed test does not rely on
+  sample splitting or cross-fitting … This offers the advantage of using the
+  entire dataset for model training."</em></li>
+</ul>
+<h3 id="step-2-the-conditional-characteristic-function">Step 2: the conditional characteristic function</h3>
+<blockquote>
+<p>Train an MDN with <code>G</code> components on <code>{X_{t−1}, Y_{t−1}}</code>; draw <code>M</code> samples
+<code>X*_j</code> from <code>f̂(· | Y_{t−1})</code>; set <code>φ̂(ν | Y_{t−1}) = M⁻¹ Σ_j e^{iν′X*_j}</code>.</p>
+</blockquote>
+<p><strong>Rates.</strong> Lemma 3 (following Zhou et al. 2023) bounds the <code>L²</code> error of the
+MDN density estimate by <code>C q { G^{−ω₁} + G^{(γ₀+q)/(2γ₀)+4ω₂} n^{−γ₀/(2γ₀+q)} log³(nG) }</code>,
+and Lemma 4 converts it into <code>max_ℓ ∫ (φ̂(ν_ℓ|y) − φ(ν_ℓ|y))² F(dy) = O_p(n^{−κ})</code>
+for some <code>κ &gt; 1/2</code>. The two competing terms in Lemma 3 are why <code>G</code> must be
+neither too small (approximation bias, first term) nor too large (estimation
+variance, second term); <code>G = 10</code> is the paper's practical compromise.</p>
+<p><strong>Code:</strong> <code>drgct/nets.py</code></p>
+<ul>
+<li><code>MixtureDensityNetwork(d_y, d_x, G, width, depth, min_sigma)</code> — a shared
+  ReLU trunk feeding three heads: <code>log α_g(y)</code> via log-softmax, <code>μ_g(y)</code>, and
+  <code>σ_g(y)</code> via softplus plus a floor. The floor is the finite-sample analogue
+  of Assumption 6(i)'s <code>σ_g(y) ≥ C⁻¹G^{−ω₂}</code>.</li>
+<li><code>X_{t−1}</code> is <code>p</code>-dimensional, so the components are diagonal-covariance
+  Gaussians, <code>Π_d N(x_d; μ_{g,d}(y), σ_{g,d}(y)²)</code>. For <code>p = 1</code> this reduces
+  exactly to the univariate mixture written in Assumption 6(i).</li>
+<li>Trained by maximum likelihood (<code>-log_prob().mean()</code>), as the paper states,
+  with gradient-norm clipping at 5.</li>
+<li><code>.sample(y, M)</code> implements Step 2(c) via a categorical draw over components
+  followed by a Gaussian draw.</li>
+</ul>
+<p><strong>Step 2(e):</strong> the Monte-Carlo average, vectorised over <code>t</code>, <code>j</code> and <code>ℓ</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">proj</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;nmp,lp-&gt;nml&quot;</span><span class="p">,</span> <span class="n">dens_fit</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>   <span class="c1"># ν_ℓ′X*_j</span>
+<span class="n">phi_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">proj</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>                   <span class="c1"># (n_eff, L)</span>
+</code></pre></div>
+
+<h3 id="step-2d-the-random-directions">Step 2(d): the random directions</h3>
+<blockquote>
+<p>Sample <code>L</code> i.i.d. pairs <code>(μ_ℓ, ν_ℓ)</code> from a multivariate uniform over a
+compact interval.</p>
+</blockquote>
+<div class="codehilite"><pre><span></span><code><span class="n">mu</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">w_lower</span><span class="p">,</span> <span class="n">w_upper</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">q</span><span class="p">))</span>
+<span class="n">nu</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">w_lower</span><span class="p">,</span> <span class="n">w_upper</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Assumption 7(iv) requires <code>L</code> to grow polynomially in <code>n</code>. In finite samples
+<code>L</code> is a genuine tuning parameter: it governs both power and the <em>simulation</em>
+noise in the p-value. See <code>drgc_stability</code> and §5.8 of the guide.</p>
+<hr />
+<h2 id="4-the-statistic-step-3">4. The statistic — Step 3</h2>
+<h3 id="equations-79">Equations (7)–(9)</h3>
+<div class="codehilite"><pre><span></span><code>S_n(μ,ν)  = (n−q)^{−1/2} Σ_t (Y_t − m(Y_{t−1}))  e^{iμ′Y_{t−1}} (e^{iν′X_{t−1}} − φ(ν|Y_{t−1}))     (7)
+Ŝ_n(μ,ν)  = (n−q)^{−1/2} Σ_t (Y_t − m̂(Y_{t−1})) e^{iμ′Y_{t−1}} (e^{iν′X_{t−1}} − φ̂(ν|Y_{t−1}))     (8)
+Ŝ_n(μ_ℓ,ν_ℓ) evaluated at the L random pairs                                                        (9)
+</code></pre></div>
+
+<p><strong>Code:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="n">resid</span> <span class="o">=</span> <span class="n">y_s</span> <span class="o">-</span> <span class="n">mean_fit</span><span class="o">.</span><span class="n">fitted</span>                       <span class="c1"># Y_t − m̂(Y_{t−1})</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">ylag_s</span> <span class="o">@</span> <span class="n">mu</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>                    <span class="c1"># (n_eff, L)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">xlag_s</span> <span class="o">@</span> <span class="n">nu</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">-</span> <span class="n">phi_hat</span>          <span class="c1"># (n_eff, L)</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">resid</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>                          <span class="c1"># influence terms z_{t,ℓ}</span>
+<span class="n">S_hat</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">n_eff</span><span class="p">)</span>       <span class="c1"># (L,) complex</span>
+</code></pre></div>
+
+<h3 id="equation-10-the-kolmogorovsmirnov-functional">Equation (10) — the Kolmogorov–Smirnov functional</h3>
+<div class="codehilite"><pre><span></span><code>KS_n = max_{ℓ≤L} max( |Re Ŝ_n(μ_ℓ,ν_ℓ)| , |Im Ŝ_n(μ_ℓ,ν_ℓ)| )
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code><span class="n">ks_stat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">S_hat</span><span class="o">.</span><span class="n">real</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">S_hat</span><span class="o">.</span><span class="n">imag</span><span class="p">))))</span>
+</code></pre></div>
+
+<p><code>tests/test_core.py::test_statistic_matches_its_definition</code> recomputes both
+from <code>result.influence</code> and asserts equality to <code>1e-10</code>.</p>
+<hr />
+<h2 id="5-asymptotics">5. Asymptotics</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Result</th>
+<th>Statement</th>
+<th>What it buys you</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Proposition 2</strong></td>
+<td><code>sup_{(μ,ν)} \|S_n − Ŝ_n\| = o_p(1)</code> under <code>H0</code></td>
+<td>Plugging in the two network estimators is asymptotically free — <em>because</em> of the doubly robust construction.</td>
+</tr>
+<tr>
+<td><strong>Theorem 1</strong></td>
+<td><code>Ŝ_n ⇝ S_∞</code>, a zero-mean Gaussian process</td>
+<td>The statistic has a limit.</td>
+</tr>
+<tr>
+<td><strong>Corollary 1</strong></td>
+<td><code>KS_n ⇝ sup_{(μ,ν)} max(\|S_R\|, \|S_I\|)</code></td>
+<td>The limit of the statistic itself. Data-dependent covariance kernel ⇒ bootstrap needed.</td>
+</tr>
+<tr>
+<td><strong>Theorem 2</strong></td>
+<td>Under <code>H1</code>, <code>n^{−1/2} Ŝ_n →_p E[(Y_t − m) e^{iw′W}] ≠ 0</code></td>
+<td><code>KS_n → ∞</code>, so power → 1: the test is consistent.</td>
+</tr>
+<tr>
+<td><strong>Theorem 3 / Corollary 2</strong></td>
+<td>Under <code>H_{1n} : E[Y_t − m \| W_{t−1}] = n^{−1/2}Δ(W_{t−1})</code>, <code>Ŝ_n ⇝ S_∞ + Q</code></td>
+<td>Non-trivial power against <code>n^{−1/2}</code> local alternatives — the parametric rate, far faster than the <code>n^{−1/2}h^{−d/4}</code> typical of smoothing tests.</td>
+</tr>
+<tr>
+<td><strong>Theorem 4</strong></td>
+<td><code>Ŝ*_n →_p* S_∞</code> under <code>H0</code>, <code>H1</code> and <code>H_{1n}</code></td>
+<td>The multiplier bootstrap is valid everywhere, so critical values are right and power is preserved.</td>
+</tr>
+</tbody>
+</table></div>
+<p>The paper also notes explicitly that <code>Ŝ⁰_n</code> — the naive process (5) — <strong>does
+not</strong> converge to a Gaussian process under <code>H0</code>. That is the theoretical
+statement behind the empirical size failure this package reproduces with
+<code>doubly_robust=False</code>.</p>
+<hr />
+<h2 id="6-the-multiplier-bootstrap-step-4">6. The multiplier bootstrap — Step 4</h2>
+<h3 id="equation-12">Equation (12)</h3>
+<div class="codehilite"><pre><span></span><code>Ŝ*_n(μ,ν) = (n−q)^{−1/2} Σ_t ξ_t (Y_t − m̂(Y_{t−1})) e^{iμ′Y_{t−1}} (e^{iν′X_{t−1}} − φ̂(ν|Y_{t−1}))
+</code></pre></div>
+
+<p>with <code>{ξ_t}</code> i.i.d., mean 0, variance 1, <strong>bounded support</strong>, independent of
+the data. Assumption 1 makes <code>{Y_t − E(Y_t|W_{t−1})}</code> a martingale difference
+sequence, which is what lets the multipliers reproduce the covariance kernel.</p>
+<p><strong>Code:</strong> because the summand is exactly <code>result.influence</code>, the entire
+bootstrap is one matrix product:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">xi</span>         <span class="o">=</span> <span class="n">draw_multipliers</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">n_eff</span><span class="p">),</span> <span class="n">multiplier</span><span class="p">)</span>   <span class="c1"># (B, n_eff)</span>
+<span class="n">S_boot</span>     <span class="o">=</span> <span class="p">(</span><span class="n">xi</span> <span class="o">@</span> <span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_eff</span><span class="p">)</span>                       <span class="c1"># (B, L) complex</span>
+<span class="n">boot_stats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">S_boot</span><span class="o">.</span><span class="n">real</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">S_boot</span><span class="o">.</span><span class="n">imag</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">pvalue</span>     <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">boot_stats</span> <span class="o">&gt;=</span> <span class="n">ks_stat</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Nothing is re-estimated. This is the computational point of Section 3.4:
+<em>"this procedure allows the critical value to be determined using the already
+estimated quantities, thereby avoiding redundant calculations."</em> With
+<code>n = 750</code>, <code>L = 20</code>, <code>B = 999</code>, the bootstrap costs about 15 ms against
+roughly 10 s for the two networks.</p>
+<p><strong>Choice of <code>ξ</code>.</strong> <code>"rademacher"</code> (±1 with equal probability) is the default:
+mean 0, variance 1, support <code>{−1, 1}</code>. <code>"mammen"</code> is the skewed two-point
+distribution with the same first two moments and bounded support.
+<code>"normal"</code> is offered for experimentation but violates the bounded-support
+condition of Theorem 4.</p>
+<h3 id="step-5">Step 5</h3>
+<blockquote>
+<p>Reject <code>H0</code> if <code>p*_n &lt; α</code>, where <code>p*_n = B⁻¹ Σ_b 1{KS*_{n,b} ≥ KS_n}</code>.</p>
+</blockquote>
+<hr />
+<h2 id="7-assumptions-and-what-they-mean-for-practice">7. Assumptions and what they mean for practice</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Assumption</th>
+<th>Statement</th>
+<th>Practical reading</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>Stationarity; <code>β</code>-mixing with <code>β(t) ≤ C₁ exp(−C₂t)</code>; <code>{Y_t − E(Y_t\|W_{t−1})}</code> is an m.d.s.</td>
+<td><strong>The binding one.</strong> Difference or transform to stationarity, and verify with <code>check_stationarity</code>. Exponential mixing rules out long memory.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Compact support of <code>X</code>, <code>Y</code>; <code>‖m‖_∞</code> and <code>‖f‖_∞</code> bounded</td>
+<td>Used by Lemma 1. Financial returns are not compactly supported — which is exactly why Lemma 2 exists.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Density of <code>Y_t</code> is sub-Gaussian</td>
+<td>The unbounded-data route (Brown 2024). Fat-tailed returns strictly speaking violate this too; the test's empirical size holds up well in practice, but it is worth a robustness check with winsorised data.</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td><code>m(·)</code> lies in a Sobolev ball of smoothness <code>β₀</code></td>
+<td>Sets the MLP rate. <code>MLPConfig(beta0=...)</code> feeds <code>width="theory"</code>.</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td><code>f_{X\|Y}</code> is well approximated by a <code>G</code>-component Gaussian mixture; components bounded; <code>α_g, μ_g, σ_g</code> Sobolev-smooth of order <code>γ₀</code></td>
+<td>Justifies the MDN. Discrete or bounded <code>X</code> (e.g. a 0/1 policy indicator) sits badly here.</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>The MDN function class and its parameter count</td>
+<td><code>min_sigma</code> implements the <code>σ_g ≥ C⁻¹G^{−ω₂}</code> part.</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td><code>‖m̂ − m‖ = O(n^{−κ₀})</code> and <code>‖f̂ − f‖ = O(n^{−κ₀})</code> with <code>κ₀ &gt; 1/4</code>; <code>M = κ₁n^{κ₂}</code> with <code>κ₂ ≥ 1/2</code>; <code>L</code> polynomial in <code>n</code></td>
+<td><strong>The double-robustness budget.</strong> <code>κ₀ &gt; 1/4</code> for each, so the product beats <code>n^{−1/2}</code>. Note 7(iii) formally wants <code>M</code> to grow with <code>n</code>; the paper fixes <code>M = 20</code> and reports insensitivity. Raise <code>M</code> if <code>p</code> is large.</td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td>Bounded densities for <code>X_t</code>, <code>Y_t</code>; sub-Gaussian <code>ε_t = Y_t − E(Y_t\|W_{t−1})</code></td>
+<td>Standard regularity for the weak-convergence argument.</td>
+</tr>
+<tr>
+<td><strong>9</strong></td>
+<td><code>Δ(w)</code> bounded; a uniform LLN for the local drift</td>
+<td>Only needed for the local-power result.</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="8-deliberate-implementation-choices">8. Deliberate implementation choices</h2>
+<p>Places where the paper leaves a choice open and this package had to make one.
+All are exposed as arguments.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Choice</th>
+<th>What we do</th>
+<th>Why</th>
+<th>Override</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Support of <code>(μ, ν)</code></td>
+<td><code>U[−1, 1]^{p+q}</code> on standardised inputs</td>
+<td>The paper says "a specified compact interval" without fixing it. With z-scored inputs, <code>[−1,1]</code> puts <code>w′W</code> on a scale where <code>e^{iw′W}</code> oscillates informatively without aliasing.</td>
+<td><code>w_lower</code>, <code>w_upper</code></td>
+</tr>
+<tr>
+<td>Input scaling</td>
+<td>z-score <code>X</code>, <code>Y</code> and the lag blocks</td>
+<td>Leaves the p-value invariant (both <code>KS_n</code> and every <code>KS*_n</code> scale identically) but makes network training far more reliable.</td>
+<td><code>standardize=False</code></td>
+</tr>
+<tr>
+<td>Multiplier distribution</td>
+<td>Rademacher</td>
+<td>Bounded support, as Theorem 4 requires; the canonical two-point choice.</td>
+<td><code>multiplier="mammen"</code> / <code>"normal"</code></td>
+</tr>
+<tr>
+<td>MDN for <code>p &gt; 1</code></td>
+<td>Diagonal-covariance Gaussian mixture in <code>R^p</code></td>
+<td>Assumption 6(i) is written for scalar <code>x</code>; the diagonal mixture is the standard Bishop (1994) multivariate MDN and reduces to it at <code>p = 1</code>.</td>
+<td>subclass <code>MixtureDensityNetwork</code></td>
+</tr>
+<tr>
+<td>Optimiser</td>
+<td>Adam, early stopping on the running training loss</td>
+<td>Not specified in the paper.</td>
+<td><code>MLPConfig</code>, <code>MDNConfig</code></td>
+</tr>
+<tr>
+<td><code>N(0, 0.5)</code> in the DGPs</td>
+<td>read as a <strong>variance</strong></td>
+<td>The standard convention; the paper does not disambiguate.</td>
+<td><code>simulate_dgp(..., innovation_scale="sd")</code></td>
+</tr>
+<tr>
+<td>NHKJ benchmark</td>
+<td>Zheng (1996) / Fan–Li (1996) degenerate U-statistic with a fourth-order Gaussian kernel and <code>h = c·n^{−0.15}</code></td>
+<td>The paper states the kernel order and bandwidth schedule but not the estimator's algebra. Same family, but <strong>different finite-sample behaviour</strong> from the paper's NHKJ — see <code>results/README.md</code>. Not a transcription.</td>
+<td><code>nhkj_test(kernel_order=..., bandwidth=...)</code></td>
+</tr>
+<tr>
+<td><code>p &gt; q</code></td>
+<td>allowed, effective sample starts at <code>max(p,q)+1</code></td>
+<td>The paper maintains <code>p ≤ q</code>; relaxing it is harmless and sometimes useful.</td>
+<td><code>allow_p_gt_q=False</code> in <code>build_lag_design</code></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="9-source-map">9. Source map</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Paper element</th>
+<th>File</th>
+<th>Symbol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lag bookkeeping, Steps 1(a), 2(a)</td>
+<td><code>utils.py</code></td>
+<td><code>build_lag_design</code>, <code>LagDesign</code></td>
+</tr>
+<tr>
+<td>Step 1(b), Lemmas 1–2</td>
+<td><code>nets.py</code></td>
+<td><code>MLP</code>, <code>fit_conditional_mean</code>, <code>theory_width</code>, <code>theory_depth</code></td>
+</tr>
+<tr>
+<td>Steps 2(b)–2(c), Lemma 3</td>
+<td><code>nets.py</code></td>
+<td><code>MixtureDensityNetwork</code>, <code>fit_conditional_density</code></td>
+</tr>
+<tr>
+<td>Step 2(d)</td>
+<td><code>core.py</code></td>
+<td><code>mu = rng.uniform(...)</code>, <code>nu = rng.uniform(...)</code></td>
+</tr>
+<tr>
+<td>Step 2(e), Lemma 4</td>
+<td><code>core.py</code></td>
+<td><code>phi_hat = np.exp(1j * proj).mean(axis=1)</code></td>
+</tr>
+<tr>
+<td>Equations (8)–(9), Step 3(a)</td>
+<td><code>core.py</code></td>
+<td><code>z</code>, <code>S_hat</code></td>
+</tr>
+<tr>
+<td>Equation (10), Step 3(b)</td>
+<td><code>core.py</code></td>
+<td><code>ks_stat</code></td>
+</tr>
+<tr>
+<td>Equation (12), Step 4, Theorem 4</td>
+<td><code>core.py</code>, <code>utils.py</code></td>
+<td><code>S_boot</code>, <code>draw_multipliers</code></td>
+</tr>
+<tr>
+<td>Step 5</td>
+<td><code>core.py</code></td>
+<td><code>reject = pvalue &lt; alpha</code></td>
+</tr>
+<tr>
+<td>Naive process (5)</td>
+<td><code>core.py</code></td>
+<td><code>doubly_robust=False</code></td>
+</tr>
+<tr>
+<td>Table 1, Table 2</td>
+<td><code>dgp.py</code></td>
+<td><code>simulate_dgp</code>, <code>PARAMETERS</code>, <code>dgp_table</code>, <code>parameter_table</code></td>
+</tr>
+<tr>
+<td>Table 3, Table 4</td>
+<td><code>simulate.py</code>, <code>tables.py</code></td>
+<td><code>monte_carlo</code>, <code>table_size</code>, <code>table_power</code></td>
+</tr>
+<tr>
+<td>Table 5, Table 6</td>
+<td><code>applications.py</code>, <code>tables.py</code></td>
+<td><code>price_volume_study</code>, <code>table_detection</code>, <code>table_lag_orders</code></td>
+</tr>
+<tr>
+<td>NHKJ benchmark</td>
+<td><code>nhkj.py</code></td>
+<td><code>nhkj_test</code></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="10-references">10. References</h2>
+<ul>
+<li>Bishop, C. M. (1994). <em>Mixture density networks.</em> Aston University.</li>
+<li>Brown, C. (2024). <em>Statistical properties of deep neural networks with dependent data.</em> arXiv:2410.11113.</li>
+<li>Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. <em>The Econometrics Journal</em> 21, C1–C68.</li>
+<li>Delgado, M. A. and González Manteiga, W. (2001). Significance testing in nonparametric regression based on the bootstrap. <em>The Annals of Statistics</em> 29, 1469–1507.</li>
+<li>Fan, Y. and Li, Q. (1996). Consistent model specification tests: omitted variables and semiparametric functional forms. <em>Econometrica</em> 64, 865–890.</li>
+<li>Farrell, M. H., Liang, T. and Misra, S. (2021). Deep neural networks for estimation and inference. <em>Econometrica</em> 89, 181–213.</li>
+<li>Granger, C. W. J. (1969). Investigating causal relations by econometric models and cross-spectral methods. <em>Econometrica</em> 37, 424–438.</li>
+<li>Hui, Y., Liu, C. and Song, X. (2025). <em>Deep learning based doubly robust test for Granger causality.</em> arXiv:2509.15798.</li>
+<li>Mammen, E. (1993). Bootstrap and wild bootstrap for high-dimensional linear models. <em>The Annals of Statistics</em> 21, 255–285.</li>
+<li>Nishiyama, Y., Hitomi, K., Kawasaki, Y. and Jeong, K. (2011). A consistent nonparametric test for nonlinear causality — specification in time series regression. <em>Journal of Econometrics</em> 165, 112–127.</li>
+<li>Robins, J. M., Rotnitzky, A. and Zhao, L. P. (1994). Estimation of regression coefficients when some regressors are not always observed. <em>JASA</em> 89, 846–866.</li>
+<li>Stinchcombe, M. B. and White, H. (1998). Consistent specification testing with nuisance parameters present only under the alternative. <em>Econometric Theory</em> 14, 295–325.</li>
+<li>Vovk, V. and Wang, R. (2020). Combining p-values via averaging. <em>Biometrika</em> 107, 791–808.</li>
+<li>Zheng, J. X. (1996). A consistent test of functional form via nonparametric estimation techniques. <em>Journal of Econometrics</em> 75, 263–289.</li>
+<li>Zhou, Y., Shi, C., Li, L. and Yao, Q. (2023). Testing for the Markov property in time series via deep conditional generative learning. <em>JRSS-B</em> 85, 1204–1222.</li>
+</ul>
+    <div class="pagefoot">
+      <div>
+        <strong>drgct 1.0.0</strong> · MIT licence · © 2026 Dr Merwan Roudane
+      </div>
+      <div>
+        <a href="https://github.com/merwanroudane/DRGCT">Source</a> ·
+        <a href="https://pypi.org/project/drgct/">PyPI</a> ·
+        <a href="https://arxiv.org/abs/2509.15798">Paper</a> ·
+        <a href="https://github.com/merwanroudane/DRGCT/issues">Report an issue</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<aside class="toc"><div class="group">On this page</div>
+  <a href="#0-notation">0. Notation</a>
+  <a href="#1-the-markov-property-equation-1">1. The Markov property, equation (1)</a>
+  <a href="#2-the-null-hypothesis">2. The null hypothesis</a>
+  <a href="#equation-2-conditional-moment-form" class="h3">Equation (2) — conditional moment form</a>
+  <a href="#equation-3-after-stinchcombe-and-white-1998" class="h3">Equation (3) — after Stinchcombe and White (1998)</a>
+  <a href="#equation-6-the-doubly-robust-form" class="h3">Equation (6) — the doubly robust form</a>
+  <a href="#3-estimation-steps-1-and-2-of-algorithm-1">3. Estimation — Steps 1 and 2 of Algorithm 1</a>
+  <a href="#step-1-the-conditional-mean" class="h3">Step 1: the conditional mean</a>
+  <a href="#step-2-the-conditional-characteristic-function" class="h3">Step 2: the conditional characteristic function</a>
+  <a href="#step-2d-the-random-directions" class="h3">Step 2(d): the random directions</a>
+  <a href="#4-the-statistic-step-3">4. The statistic — Step 3</a>
+  <a href="#equations-79" class="h3">Equations (7)–(9)</a>
+  <a href="#equation-10-the-kolmogorovsmirnov-functional" class="h3">Equation (10) — the Kolmogorov–Smirnov functional</a>
+  <a href="#5-asymptotics">5. Asymptotics</a>
+  <a href="#6-the-multiplier-bootstrap-step-4">6. The multiplier bootstrap — Step 4</a>
+  <a href="#equation-12" class="h3">Equation (12)</a>
+  <a href="#step-5" class="h3">Step 5</a>
+  <a href="#7-assumptions-and-what-they-mean-for-practice">7. Assumptions and what they mean for practice</a>
+  <a href="#8-deliberate-implementation-choices">8. Deliberate implementation choices</a>
+  <a href="#9-source-map">9. Source map</a>
+  <a href="#10-references">10. References</a>
+</aside>
+
+</div>
+</body>
+</html>

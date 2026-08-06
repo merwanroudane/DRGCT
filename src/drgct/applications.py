@@ -27,10 +27,21 @@ from typing import Iterable, Sequence
 
 import numpy as np
 
-from .datasets import INDEX_KEYS, INDEX_LABELS, PAPER_PERIODS, load_index, subsample, to_percentage_changes
+from .datasets import (
+    INDEX_KEYS,
+    INDEX_LABELS,
+    MACRO_PERIODS,
+    PAPER_PERIODS,
+    load_index,
+    load_macro,
+    subsample,
+    to_percentage_changes,
+)
 
 __all__ = [
     "DIRECTIONS",
+    "MACRO_RELATIONS",
+    "macro_study",
     "run_one_test",
     "price_volume_study",
     "rolling_causality",
@@ -400,3 +411,142 @@ def lag_scan_frame(
     if progress:
         print()
     return pd.DataFrame(records).sort_values(["direction", "lag"]).reset_index(drop=True)
+
+
+# --------------------------------------------------------------------------- #
+# US macroeconomic application
+# --------------------------------------------------------------------------- #
+#: The six macroeconomic relations tested in the macro application.  Each entry
+#: is ``(cause, effect, short label, the question it answers)`` where *cause*
+#: and *effect* are column labels of :func:`drgct.datasets.load_macro`.
+MACRO_RELATIONS = [
+    ("Fed funds rate", "Industrial production", "MP to output",
+     "Does monetary policy move real activity, and after how many months? "
+     "Friedman's (1961) long and variable lags."),
+    ("Fed funds rate", "CPI inflation", "MP to prices",
+     "The price leg of monetary transmission; the lag is conventionally "
+     "thought to be longer than the output leg."),
+    ("M2 money growth", "CPI inflation", "Money to prices",
+     "The quantity theory in its Granger-causal form."),
+    ("WTI oil price", "CPI inflation", "Oil to prices",
+     "Pass-through of energy supply shocks into headline inflation."),
+    ("WTI oil price", "Industrial production", "Oil to output",
+     "Hamilton's (1983) oil-shock channel; the response is famously "
+     "asymmetric, so a linear test is the wrong instrument."),
+    ("Industrial production", "Unemployment rate", "Output to unemployment",
+     "Okun's law read as a dynamic, one-directional forecasting statement."),
+]
+
+
+def macro_study(
+    relations=MACRO_RELATIONS,
+    periods=("Full sample",),
+    lags: Iterable[int] = (1, 3, 6, 9, 12, 18),
+    *,
+    both_directions: bool = True,
+    alpha: float = 0.05,
+    drgc_kwargs: dict | None = None,
+    seed: int = 19590201,
+    n_jobs: int = 1,
+    progress: bool = True,
+    out_csv: str | os.PathLike | None = None,
+):
+    """Run the DRGCT over a grid of macroeconomic relations, periods and lags.
+
+    Parameters
+    ----------
+    relations : sequence
+        ``(cause, effect, short_label, question)`` tuples; see
+        :data:`MACRO_RELATIONS`.  ``cause`` and ``effect`` must be column
+        labels of :func:`drgct.datasets.load_macro`.
+    periods : sequence of str or dict
+        Keys of :data:`drgct.datasets.MACRO_PERIODS`, or an explicit
+        ``{label: (start, end)}`` mapping.
+    lags : iterable of int
+        Lag orders in months.  Monetary transmission is usually placed at
+        6-18 months, which is precisely the range kernel-smoothing causality
+        tests cannot reach.
+    both_directions : bool
+        Also test effect -> cause, so that a one-directional finding can be
+        distinguished from a feedback loop.
+    alpha, drgc_kwargs, seed, n_jobs, progress, out_csv
+        As in :func:`price_volume_study`.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Long format with ``index_label`` (the relation), ``period``,
+        ``direction``, ``lag``, ``ks_stat``, ``pvalue``, ``reject``, so the
+        table and figure builders accept it unchanged.
+    """
+    import pandas as pd
+
+    period_map = dict(periods) if isinstance(periods, dict) else {
+        k: MACRO_PERIODS[k] for k in periods
+    }
+    lags = [int(k) for k in lags]
+    if n_jobs == -1:
+        n_jobs = max(1, (os.cpu_count() or 2) - 1)
+
+    macro = load_macro()
+    jobs = []
+    for ri, (cause, effect, short, _question) in enumerate(relations):
+        for c in (cause, effect):
+            if c not in macro.columns:
+                raise ValueError(f"{c!r} not in the macro dataset: {list(macro.columns)}")
+        for pi, (pname, (lo, hi)) in enumerate(period_map.items()):
+            sub = macro[(macro.index >= pd.Timestamp(lo)) & (macro.index <= pd.Timestamp(hi))]
+            a, b = sub[cause].to_numpy(), sub[effect].to_numpy()
+            pairs = [(a, b, f"{cause} -> {effect}")]
+            if both_directions:
+                pairs.append((b, a, f"{effect} -> {cause}"))
+            for di, (u, v, dname) in enumerate(pairs):
+                for lag in lags:
+                    meta = {
+                        "index_label": short,
+                        "relation": f"{cause} -> {effect}",
+                        "cause": cause,
+                        "effect": effect,
+                        "period": pname,
+                        "start": lo,
+                        "end": hi,
+                        "direction": dname,
+                        "forward": di == 0,
+                        "n_obs": int(len(sub)),
+                    }
+                    jobs.append((u, v, lag, meta,
+                                 seed + 7919 * ri + 613 * pi + 97 * di + lag))
+
+    total = len(jobs)
+    if progress:
+        print(f"[drgct] macro study: {len(relations)} relations x {len(period_map)} periods "
+              f"x {1 + int(both_directions)} directions x {len(lags)} lags = {total} DRGCTs "
+              f"(n_jobs={n_jobs})")
+
+    records: list[dict] = []
+    t0 = time.perf_counter()
+    kw = dict(alpha=alpha, drgc_kwargs=drgc_kwargs)
+    if n_jobs <= 1:
+        for i, (u, v, lag, meta, sd) in enumerate(jobs, start=1):
+            records.append(run_one_test(u, v, lag, meta=meta, seed=sd, **kw))
+            if progress:
+                _progress(i, total, t0)
+    else:
+        with ProcessPoolExecutor(max_workers=int(n_jobs)) as pool:
+            futs = [pool.submit(run_one_test, u, v, lag, meta=meta, seed=sd, **kw)
+                    for u, v, lag, meta, sd in jobs]
+            for i, fut in enumerate(as_completed(futs), start=1):
+                records.append(fut.result())
+                if progress:
+                    _progress(i, total, t0)
+    if progress:
+        print(f"\n[drgct] done in {(time.perf_counter() - t0) / 60:.1f} min")
+
+    order = {r[2]: i for i, r in enumerate(relations)}
+    df = pd.DataFrame(records)
+    df = (df.assign(_o=df["index_label"].map(order))
+            .sort_values(["_o", "period", "forward", "lag"], ascending=[True, True, False, True])
+            .drop(columns="_o").reset_index(drop=True))
+    if out_csv:
+        df.to_csv(out_csv, index=False)
+    return df

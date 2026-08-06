@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US macro application — drgct</title>
+<meta name="description" content="Sixty-seven years of monthly FRED data, six relations that the macro literature argues about, both directions, lag orders from one month to eighteen. This is the application the DR">
+<meta name="author" content="Dr Merwan Roudane">
+<link rel="canonical" href="https://merwanroudane.github.io/DRGCT/macro.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="US macro application — drgct">
+<meta property="og:description" content="Sixty-seven years of monthly FRED data, six relations that the macro literature argues about, both directions, lag orders from one month to eighteen. This is the application the DR">
+<meta property="og:url" content="https://merwanroudane.github.io/DRGCT/macro.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231F4E79'/><text x='50' y='70' font-size='58' font-family='Georgia,serif' fill='white' text-anchor='middle'>D</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="mark">drgct</span>
+    <span class="tagline">Deep-learning based doubly robust test<br>for Granger causality</span>
+  </a>
+  <button class="navtoggle" onclick="document.getElementById('sidebar').classList.toggle('open')">Menu</button>
+  <nav>
+    <div class="group">Start</div>
+    <a href="index.html">Overview</a>
+    <a href="guide.html">Applied guide</a>
+    <div class="group">Method</div>
+    <a href="theory.html">Theory</a>
+    <a href="api.html">API reference</a>
+    <a href="faq.html">FAQ</a>
+    <div class="group">Results</div>
+    <a href="macro.html" class="active">US macro application</a>
+    <a href="finance.html">Price–volume application</a>
+    <a href="simulation.html">Simulation evidence</a>
+  </nav>
+  <div class="ext">
+    <a href="https://github.com/merwanroudane/DRGCT">GitHub repository</a>
+    <a href="https://pypi.org/project/drgct/">PyPI package</a>
+    <a href="https://arxiv.org/abs/2509.15798">The paper (arXiv)</a>
+  </div>
+  <div class="byline">
+    Built and maintained by<br>
+    <strong>Dr Merwan Roudane</strong><br>
+    <a href="mailto:merwanroudane920@gmail.com">merwanroudane920@gmail.com</a><br>
+    <a href="https://github.com/merwanroudane">github.com/merwanroudane</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="content md-body">
+<h1 id="us-macroeconomics-19592025">US macroeconomics, 1959–2025</h1>
+<p class="lede">Sixty-seven years of monthly FRED data, six relations that the
+macro literature argues about, both directions, lag orders from one month to
+eighteen. This is the application the DRGCT was built for: economic mechanisms
+operate with long and variable lags, and long lags are exactly where
+kernel-smoothing causality tests stop working.</p>
+
+<p>Everything on this page was produced by
+<a href="https://github.com/merwanroudane/DRGCT/blob/main/scripts/run_macro_application.py"><code>scripts/run_macro_application.py</code></a>.
+Nothing is hand-edited. Reproduce it with:</p>
+<div class="codehilite"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;drgct[data]&quot;</span>
+python<span class="w"> </span>scripts/run_macro_application.py<span class="w"> </span>--jobs<span class="w"> </span>-1
+</code></pre></div>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">801</div><div class="l">monthly observations, Feb 1959 – Dec 2025</div></div>
+  <div class="stat"><div class="v">108</div><div class="l">doubly robust tests (72 pooled + 36 sub-sample)</div></div>
+  <div class="stat"><div class="v">6</div><div class="l">relations, each tested in both directions</div></div>
+  <div class="stat"><div class="v">1–18</div><div class="l">lag orders in months</div></div>
+</div>
+
+<h2 id="1-the-questions">1. The questions</h2>
+<p>Each relation is a proposition somebody has defended in print.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Relation</th>
+<th>The claim being tested</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Fed funds rate → Industrial production</td>
+<td>Monetary policy moves real activity — and Friedman (1961) insisted the lags are <em>long and variable</em>, which is precisely what a lag-1 test cannot see.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Fed funds rate → CPI inflation</td>
+<td>The price leg of monetary transmission, conventionally thought slower than the output leg.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>M2 money growth → CPI inflation</td>
+<td>The quantity theory, stated as a forecasting claim.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>WTI oil price → CPI inflation</td>
+<td>Pass-through of energy supply shocks into the headline basket.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>WTI oil price → Industrial production</td>
+<td>Hamilton's (1983) oil-shock channel. Famously <strong>asymmetric</strong> — price increases hurt more than decreases help — so a linear test is the wrong instrument by construction.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Industrial production → Unemployment rate</td>
+<td>Okun's law read dynamically rather than as a contemporaneous regression.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Each is also run in reverse, because a one-directional finding is a much
+stronger statement than a feedback loop, and because reverse causality is the
+standard objection to any of these claims.</p>
+<h2 id="2-data-and-transformations">2. Data and transformations</h2>
+<p>Eight monthly series from the Federal Reserve Bank of St. Louis. Indices,
+prices, money and employment enter as <code>100 × Δlog</code> (monthly growth in per
+cent); the two series already measured in per cent — the federal funds rate and
+the unemployment rate — enter as first differences.</p>
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>FRED id</th>
+      <th>Series</th>
+      <th>Transformation</th>
+      <th>Obs.</th>
+      <th>ADF p</th>
+      <th>KPSS p</th>
+      <th>Stationary</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>INDPRO</td>
+      <td>Industrial production</td>
+      <td>100 x dlog</td>
+      <td>801</td>
+      <td>0.0000</td>
+      <td>0.0186</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>CPIAUCSL</td>
+      <td>CPI inflation</td>
+      <td>100 x dlog</td>
+      <td>801</td>
+      <td>0.0261</td>
+      <td>0.0100</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>PCEPI</td>
+      <td>PCE inflation</td>
+      <td>100 x dlog</td>
+      <td>801</td>
+      <td>0.0402</td>
+      <td>0.0100</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>FEDFUNDS</td>
+      <td>Fed funds rate</td>
+      <td>first difference</td>
+      <td>801</td>
+      <td>0.0000</td>
+      <td>0.1000</td>
+      <td>yes</td>
+    </tr>
+    <tr>
+      <td>M2SL</td>
+      <td>M2 money growth</td>
+      <td>100 x dlog</td>
+      <td>801</td>
+      <td>0.0000</td>
+      <td>0.0782</td>
+      <td>yes</td>
+    </tr>
+    <tr>
+      <td>UNRATE</td>
+      <td>Unemployment rate</td>
+      <td>first difference</td>
+      <td>801</td>
+      <td>0.0000</td>
+      <td>0.1000</td>
+      <td>yes</td>
+    </tr>
+    <tr>
+      <td>PAYEMS</td>
+      <td>Nonfarm payrolls</td>
+      <td>100 x dlog</td>
+      <td>801</td>
+      <td>0.0000</td>
+      <td>0.0100</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>WTISPLC</td>
+      <td>WTI oil price</td>
+      <td>100 x dlog</td>
+      <td>801</td>
+      <td>0.0000</td>
+      <td>0.1000</td>
+      <td>yes</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 1.</strong> Series, transformations and stationarity screens. ADF reports the p-value of the unit-root null, KPSS the p-value of the stationarity null. A series is marked stationary only when ADF rejects <em>and</em> KPSS does not.</figcaption></figure>
+
+<div class="warn"><strong>An honest problem with the pooled sample</strong>
+<p>Four series — CPI inflation, PCE inflation, industrial production growth and
+payroll growth — <b>fail the KPSS screen on the full sample</b> even though ADF
+rejects the unit root. Assumption 1 of the paper requires strict stationarity,
+so the pooled results below are on shakier ground than the sub-sample results.</p>
+<p>The failure is not mysterious. It is the Great Moderation: the mean and
+variance of US inflation and output growth shift around 1984, and KPSS with a
+constant reads a level shift as non-stationarity. Split the sample and the
+screen behaves — CPI inflation has KPSS <i>p</i> = 0.083 within 1984–2025
+against 0.010 pooled. That is one more reason to take
+<a href="#4-before-and-after-the-great-moderation">Section 4</a> more seriously
+than Section 3.</p></div>
+
+<figure><img loading="lazy" src="assets/figures/macro_fig1_series.png" alt="Figure 1"><figcaption><strong>Figure 1.</strong> The six series used in the tests, in levels (left) and after transformation (right). The transformed series are what the test actually sees. The volatility break around 1984 is visible in industrial production and inflation.</figcaption></figure>
+
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Statistic</th>
+      <th>Industrial production</th>
+      <th>CPI inflation</th>
+      <th>PCE inflation</th>
+      <th>Fed funds rate</th>
+      <th>M2 money growth</th>
+      <th>Unemployment rate</th>
+      <th>Nonfarm payrolls</th>
+      <th>WTI oil price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Obs.</td>
+      <td>801.000</td>
+      <td>801.000</td>
+      <td>801.000</td>
+      <td>801.000</td>
+      <td>801.000</td>
+      <td>801.000</td>
+      <td>801.000</td>
+      <td>801.000</td>
+    </tr>
+    <tr>
+      <td>Mean</td>
+      <td>0.192</td>
+      <td>0.302</td>
+      <td>0.266</td>
+      <td>0.002</td>
+      <td>0.543</td>
+      <td>-0.002</td>
+      <td>0.138</td>
+      <td>0.378</td>
+    </tr>
+    <tr>
+      <td>Median</td>
+      <td>0.233</td>
+      <td>0.262</td>
+      <td>0.230</td>
+      <td>0.000</td>
+      <td>0.522</td>
+      <td>0.000</td>
+      <td>0.156</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>Std. dev.</td>
+      <td>0.990</td>
+      <td>0.311</td>
+      <td>0.245</td>
+      <td>0.492</td>
+      <td>0.459</td>
+      <td>0.428</td>
+      <td>0.582</td>
+      <td>8.268</td>
+    </tr>
+    <tr>
+      <td>Min.</td>
+      <td>-14.142</td>
+      <td>-1.786</td>
+      <td>-1.187</td>
+      <td>-6.630</td>
+      <td>-1.412</td>
+      <td>-2.200</td>
+      <td>-14.578</td>
+      <td>-56.813</td>
+    </tr>
+    <tr>
+      <td>Max.</td>
+      <td>6.347</td>
+      <td>1.794</td>
+      <td>1.221</td>
+      <td>3.060</td>
+      <td>6.223</td>
+      <td>10.400</td>
+      <td>3.422</td>
+      <td>85.259</td>
+    </tr>
+    <tr>
+      <td>Skewness</td>
+      <td>-3.709</td>
+      <td>0.283</td>
+      <td>0.492</td>
+      <td>-2.413</td>
+      <td>3.941</td>
+      <td>17.691</td>
+      <td>-19.982</td>
+      <td>0.726</td>
+    </tr>
+    <tr>
+      <td>Kurtosis</td>
+      <td>61.740</td>
+      <td>7.387</td>
+      <td>6.005</td>
+      <td>53.964</td>
+      <td>44.765</td>
+      <td>439.957</td>
+      <td>513.730</td>
+      <td>25.395</td>
+    </tr>
+    <tr>
+      <td>Jarque-Bera</td>
+      <td>116994.324</td>
+      <td>653.052</td>
+      <td>333.735</td>
+      <td>87463.813</td>
+      <td>60289.907</td>
+      <td>6414110.351</td>
+      <td>8759001.618</td>
+      <td>16808.950</td>
+    </tr>
+    <tr>
+      <td>JB p-value</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>Ljung-Box(10)</td>
+      <td>93.825</td>
+      <td>1559.568</td>
+      <td>2403.082</td>
+      <td>201.019</td>
+      <td>898.139</td>
+      <td>9.826</td>
+      <td>19.903</td>
+      <td>56.752</td>
+    </tr>
+    <tr>
+      <td>LB p-value</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.456</td>
+      <td>0.030</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>Ljung-Box$^2$(10)</td>
+      <td>40.573</td>
+      <td>1598.694</td>
+      <td>2657.808</td>
+      <td>258.047</td>
+      <td>339.521</td>
+      <td>3.044</td>
+      <td>2.731</td>
+      <td>77.117</td>
+    </tr>
+    <tr>
+      <td>LB$^2$ p-value</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.980</td>
+      <td>0.987</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>ADF p-value</td>
+      <td>0.000</td>
+      <td>0.026</td>
+      <td>0.040</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>KPSS p-value</td>
+      <td>0.019</td>
+      <td>0.010</td>
+      <td>0.010</td>
+      <td>0.100</td>
+      <td>0.078</td>
+      <td>0.100</td>
+      <td>0.010</td>
+      <td>0.100</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 2.</strong> Descriptive statistics. Ljung–Box statistics use 10 lags; all six series are strongly serially correlated in the level and in the square, which is why the conditional mean <code>m(Y(t−1))</code> is a non-trivial object.</figcaption></figure>
+
+<h2 id="3-results-the-pooled-sample">3. Results: the pooled sample</h2>
+<p>Hyper-parameters: <code>G = 10</code> mixture components, <code>M = 20</code> pseudo-samples,
+<code>B = 999</code> bootstrap replications, Rademacher multipliers. <code>L</code> is raised from
+the paper's 20 to <strong>60</strong> random directions, because at lag 18 the conditioning
+set has <code>p + q = 36</code> dimensions and twenty directions cover that space far too
+thinly — see <a href="https://github.com/merwanroudane/DRGCT/blob/main/guide.html#54-choose-the-hyper-parameters">the guide's §5.4</a>.</p>
+<figure><img loading="lazy" src="assets/figures/macro_fig2_pvalue_heatmap.png" alt="Figure 2"><figcaption><strong>Figure 2.</strong> Bootstrap p-values for all twelve directed relations at six lag orders. Outlined cells reject the null of non-causality at 5%. Warm cells are rejections; cool cells are not.</figcaption></figure>
+
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Causality direction</th>
+      <th>Index</th>
+      <th>Period</th>
+      <th>1</th>
+      <th>3</th>
+      <th>6</th>
+      <th>9</th>
+      <th>12</th>
+      <th>18</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CPI inflation -> Fed funds rate</td>
+      <td>MP to prices</td>
+      <td>Full sample</td>
+      <td>0.672</td>
+      <td>0.079</td>
+      <td>0.304</td>
+      <td>0.246</td>
+      <td>0.811</td>
+      <td>0.296</td>
+    </tr>
+    <tr>
+      <td>CPI inflation -> M2 money growth</td>
+      <td>Money to prices</td>
+      <td>Full sample</td>
+      <td>0.144</td>
+      <td>0.019</td>
+      <td>0.814</td>
+      <td>0.268</td>
+      <td>0.497</td>
+      <td>0.997</td>
+    </tr>
+    <tr>
+      <td>CPI inflation -> WTI oil price</td>
+      <td>Oil to prices</td>
+      <td>Full sample</td>
+      <td>0.291</td>
+      <td>0.716</td>
+      <td>0.011</td>
+      <td>0.187</td>
+      <td>0.975</td>
+      <td>0.801</td>
+    </tr>
+    <tr>
+      <td>Fed funds rate -> CPI inflation</td>
+      <td>MP to prices</td>
+      <td>Full sample</td>
+      <td>0.143</td>
+      <td>0.059</td>
+      <td>0.106</td>
+      <td>0.431</td>
+      <td>0.089</td>
+      <td>0.560</td>
+    </tr>
+    <tr>
+      <td>Fed funds rate -> Industrial production</td>
+      <td>MP to output</td>
+      <td>Full sample</td>
+      <td>0.002</td>
+      <td>0.217</td>
+      <td>0.104</td>
+      <td>0.477</td>
+      <td>0.559</td>
+      <td>0.616</td>
+    </tr>
+    <tr>
+      <td>Industrial production -> Fed funds rate</td>
+      <td>MP to output</td>
+      <td>Full sample</td>
+      <td>0.283</td>
+      <td>0.455</td>
+      <td>0.105</td>
+      <td>0.407</td>
+      <td>0.735</td>
+      <td>0.407</td>
+    </tr>
+    <tr>
+      <td>Industrial production -> Unemployment rate</td>
+      <td>Output to unemployment</td>
+      <td>Full sample</td>
+      <td>0.000</td>
+      <td>0.005</td>
+      <td>0.037</td>
+      <td>0.647</td>
+      <td>0.207</td>
+      <td>0.165</td>
+    </tr>
+    <tr>
+      <td>Industrial production -> WTI oil price</td>
+      <td>Oil to output</td>
+      <td>Full sample</td>
+      <td>0.702</td>
+      <td>0.241</td>
+      <td>0.224</td>
+      <td>0.211</td>
+      <td>0.750</td>
+      <td>0.833</td>
+    </tr>
+    <tr>
+      <td>M2 money growth -> CPI inflation</td>
+      <td>Money to prices</td>
+      <td>Full sample</td>
+      <td>0.022</td>
+      <td>0.105</td>
+      <td>0.013</td>
+      <td>0.988</td>
+      <td>0.173</td>
+      <td>0.929</td>
+    </tr>
+    <tr>
+      <td>Unemployment rate -> Industrial production</td>
+      <td>Output to unemployment</td>
+      <td>Full sample</td>
+      <td>0.000</td>
+      <td>0.097</td>
+      <td>0.374</td>
+      <td>0.449</td>
+      <td>0.014</td>
+      <td>0.510</td>
+    </tr>
+    <tr>
+      <td>WTI oil price -> CPI inflation</td>
+      <td>Oil to prices</td>
+      <td>Full sample</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.349</td>
+      <td>0.584</td>
+      <td>0.036</td>
+    </tr>
+    <tr>
+      <td>WTI oil price -> Industrial production</td>
+      <td>Oil to output</td>
+      <td>Full sample</td>
+      <td>0.020</td>
+      <td>0.214</td>
+      <td>0.303</td>
+      <td>0.267</td>
+      <td>0.062</td>
+      <td>0.640</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 3.</strong> Bootstrap p-values by lag order, pooled sample.</figcaption></figure>
+
+<h3 id="what-the-pooled-sample-says">What the pooled sample says</h3>
+<p><strong>Oil prices Granger-cause inflation, decisively and at every short horizon.</strong>
+<code>p &lt; 0.001</code> at one, three and six months, and still 0.036 at eighteen. This is
+the strongest result on the page, and it survives the robustness check in
+<a href="#6-is-the-headline-a-lucky-draw">Section 6</a> — all thirty independent direction
+draws reject. The reverse direction is significant at a single lag out of six,
+which is what you would expect by chance.</p>
+<p><strong>Industrial production Granger-causes unemployment.</strong> <code>p &lt; 0.001</code>, 0.005 and
+0.037 at one, three and six months: Okun's law holds as a dynamic forecasting
+statement, not merely as a contemporaneous correlation. Note that unemployment
+also predicts industrial production at lag 1 — genuine two-way feedback at the
+monthly frequency, as two cyclical variables should show.</p>
+<p><strong>Money growth predicts inflation at short and medium horizons.</strong> <code>p</code> = 0.022
+at one month and 0.013 at six. Not overwhelming, but the quantity theory is not
+dead in the data.</p>
+<p><strong>Monetary policy is the weak case here</strong> — and that is the interesting part.
+The federal funds rate predicts industrial production at one month
+(<code>p</code> = 0.002) and then nothing out to eighteen. It never predicts inflation at
+conventional levels in the pooled sample. Before concluding that monetary
+policy does not work, read Section 4: pooling 1959–2025 pools two entirely
+different monetary regimes.</p>
+<figure><img loading="lazy" src="assets/figures/macro_fig3_lagprofile_oil_to_prices.png" alt="Figure 3a"><figcaption><strong>Figure 3a.</strong> Oil prices to CPI inflation. The p-value (blue, left axis) sits in the rejection band out to six months; <code>KS_n</code> (green, right axis) tracks it.</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/macro_fig3_lagprofile_output_to_unemployment.png" alt="Figure 3b"><figcaption><strong>Figure 3b.</strong> Industrial production to unemployment — Okun's law, decaying with horizon exactly as one would hope.</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/macro_fig3_lagprofile_mp_to_output.png" alt="Figure 3c"><figcaption><strong>Figure 3c.</strong> Federal funds rate to industrial production, pooled sample. Significant at one month, then flat. Compare with the sub-sample split below.</figcaption></figure>
+
+<h2 id="4-before-and-after-the-great-moderation">4. Before and after the Great Moderation</h2>
+<p>The pooled sample runs across a structural break that almost everyone
+recognises: US output growth and inflation become dramatically less volatile
+after about 1984 (McConnell and Perez-Quiros, 2000; Stock and Watson, 2002),
+and monetary policy operates under a different reaction function. Testing the
+three monetary relations separately in the two eras is not a robustness check —
+it is the right specification.</p>
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Causality direction</th>
+      <th>Index</th>
+      <th>Period</th>
+      <th>3</th>
+      <th>6</th>
+      <th>12</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CPI inflation -> Fed funds rate</td>
+      <td>MP to prices</td>
+      <td>Great Inflation 1959-1983</td>
+      <td>0.025</td>
+      <td>0.671</td>
+      <td>0.931</td>
+    </tr>
+    <tr>
+      <td>CPI inflation -> Fed funds rate</td>
+      <td>MP to prices</td>
+      <td>Great Moderation 1984-2025</td>
+      <td>0.083</td>
+      <td>0.117</td>
+      <td>0.453</td>
+    </tr>
+    <tr>
+      <td>CPI inflation -> M2 money growth</td>
+      <td>Money to prices</td>
+      <td>Great Inflation 1959-1983</td>
+      <td>0.350</td>
+      <td>0.631</td>
+      <td>0.638</td>
+    </tr>
+    <tr>
+      <td>CPI inflation -> M2 money growth</td>
+      <td>Money to prices</td>
+      <td>Great Moderation 1984-2025</td>
+      <td>0.000</td>
+      <td>0.615</td>
+      <td>0.584</td>
+    </tr>
+    <tr>
+      <td>Fed funds rate -> CPI inflation</td>
+      <td>MP to prices</td>
+      <td>Great Inflation 1959-1983</td>
+      <td>0.110</td>
+      <td>0.496</td>
+      <td>0.806</td>
+    </tr>
+    <tr>
+      <td>Fed funds rate -> CPI inflation</td>
+      <td>MP to prices</td>
+      <td>Great Moderation 1984-2025</td>
+      <td>0.048</td>
+      <td>0.154</td>
+      <td>0.446</td>
+    </tr>
+    <tr>
+      <td>Fed funds rate -> Industrial production</td>
+      <td>MP to output</td>
+      <td>Great Inflation 1959-1983</td>
+      <td>0.018</td>
+      <td>0.078</td>
+      <td>0.056</td>
+    </tr>
+    <tr>
+      <td>Fed funds rate -> Industrial production</td>
+      <td>MP to output</td>
+      <td>Great Moderation 1984-2025</td>
+      <td>0.283</td>
+      <td>0.033</td>
+      <td>0.942</td>
+    </tr>
+    <tr>
+      <td>Industrial production -> Fed funds rate</td>
+      <td>MP to output</td>
+      <td>Great Inflation 1959-1983</td>
+      <td>0.445</td>
+      <td>0.208</td>
+      <td>0.316</td>
+    </tr>
+    <tr>
+      <td>Industrial production -> Fed funds rate</td>
+      <td>MP to output</td>
+      <td>Great Moderation 1984-2025</td>
+      <td>0.002</td>
+      <td>0.117</td>
+      <td>0.858</td>
+    </tr>
+    <tr>
+      <td>M2 money growth -> CPI inflation</td>
+      <td>Money to prices</td>
+      <td>Great Inflation 1959-1983</td>
+      <td>0.361</td>
+      <td>0.077</td>
+      <td>0.755</td>
+    </tr>
+    <tr>
+      <td>M2 money growth -> CPI inflation</td>
+      <td>Money to prices</td>
+      <td>Great Moderation 1984-2025</td>
+      <td>0.754</td>
+      <td>0.596</td>
+      <td>0.296</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 4.</strong> The three monetary relations, Great Inflation (1959–1983, <em>n</em> ≈ 299) versus Great Moderation (1984–2025, <em>n</em> ≈ 502).</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/macro_fig5_subsamples.png" alt="Figure 4"><figcaption><strong>Figure 4.</strong> The same numbers as a heat map. The story is in the top block: monetary policy to output.</figcaption></figure>
+
+<p><strong>Monetary transmission to output was detectable in the Great Inflation era and
+is weaker afterwards.</strong> In 1959–1983 the federal funds rate predicts industrial
+production at three months (<code>p</code> = 0.018), with borderline evidence at six
+(0.078) and twelve (0.056). In 1984–2025 only the six-month horizon rejects
+(0.033). Pooling the two eras is what produced the flat profile in Figure 3c.</p>
+<p><strong>The price leg appears only in the Great Moderation</strong> (<code>p</code> = 0.048 at three
+months), and even then it is marginal.</p>
+<p><strong>Money to prices weakens.</strong> Borderline at six months in the Great Inflation
+(<code>p</code> = 0.077), nothing in the Great Moderation. Consistent with the standard
+account of money-demand instability and the decline of monetary aggregates as
+policy indicators after the early 1980s.</p>
+<p><strong>Reverse causality shows up where you would expect it.</strong> Inflation predicts
+the federal funds rate at three months in the Great Inflation era (<code>p</code> = 0.025)
+and industrial production predicts the federal funds rate at three months in
+the Great Moderation (<code>p</code> = 0.002) — that is the policy <em>reaction function</em>
+being picked up, not policy transmission. Granger causality is symmetric in the
+statistical sense; only economics tells you which arrow is a mechanism and
+which is a reaction.</p>
+<h2 id="5-three-tests-the-same-data">5. Three tests, the same data</h2>
+<p>Every relation was also run through a textbook linear VAR <em>F</em>-test and through
+the smoothing-based nonparametric benchmark that the paper compares against.</p>
+<figure><img loading="lazy" src="assets/figures/macro_fig4_comparison.png" alt="Figure 5"><figcaption><strong>Figure 5.</strong> p-values from the three tests for each relation and lag order. Shaded band is rejection at 5%. Blue circles: DRGCT. Green squares: linear VAR <em>F</em>-test. Terracotta triangles: smoothing benchmark.</figcaption></figure>
+
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Relation</th>
+      <th>Lag</th>
+      <th>DRGCT</th>
+      <th>Linear VAR</th>
+      <th>NHKJ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MP to output</td>
+      <td>1</td>
+      <td>0.0020</td>
+      <td>0.0074</td>
+      <td>0.2711</td>
+    </tr>
+    <tr>
+      <td>MP to output</td>
+      <td>3</td>
+      <td>0.2172</td>
+      <td>0.0491</td>
+      <td>0.0735</td>
+    </tr>
+    <tr>
+      <td>MP to output</td>
+      <td>6</td>
+      <td>0.1041</td>
+      <td>0.1618</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>MP to output</td>
+      <td>9</td>
+      <td>0.4775</td>
+      <td>0.1516</td>
+      <td>0.0009</td>
+    </tr>
+    <tr>
+      <td>MP to output</td>
+      <td>12</td>
+      <td>0.5586</td>
+      <td>0.0250</td>
+      <td>0.0304</td>
+    </tr>
+    <tr>
+      <td>MP to output</td>
+      <td>18</td>
+      <td>0.6156</td>
+      <td>0.0732</td>
+      <td>0.0282</td>
+    </tr>
+    <tr>
+      <td>MP to prices</td>
+      <td>1</td>
+      <td>0.1431</td>
+      <td>0.0002</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>MP to prices</td>
+      <td>3</td>
+      <td>0.0591</td>
+      <td>0.0002</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>MP to prices</td>
+      <td>6</td>
+      <td>0.1061</td>
+      <td>0.0002</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>MP to prices</td>
+      <td>9</td>
+      <td>0.4314</td>
+      <td>0.0002</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>MP to prices</td>
+      <td>12</td>
+      <td>0.0891</td>
+      <td>0.0004</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>MP to prices</td>
+      <td>18</td>
+      <td>0.5596</td>
+      <td>0.0011</td>
+      <td>0.0390</td>
+    </tr>
+    <tr>
+      <td>Money to prices</td>
+      <td>1</td>
+      <td>0.0220</td>
+      <td>0.0842</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Money to prices</td>
+      <td>3</td>
+      <td>0.1051</td>
+      <td>0.0001</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Money to prices</td>
+      <td>6</td>
+      <td>0.0130</td>
+      <td>0.0003</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Money to prices</td>
+      <td>9</td>
+      <td>0.9880</td>
+      <td>0.0037</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Money to prices</td>
+      <td>12</td>
+      <td>0.1732</td>
+      <td>0.0142</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Money to prices</td>
+      <td>18</td>
+      <td>0.9289</td>
+      <td>0.0011</td>
+      <td>0.0054</td>
+    </tr>
+    <tr>
+      <td>Oil to prices</td>
+      <td>1</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Oil to prices</td>
+      <td>3</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Oil to prices</td>
+      <td>6</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Oil to prices</td>
+      <td>9</td>
+      <td>0.3493</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Oil to prices</td>
+      <td>12</td>
+      <td>0.5836</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Oil to prices</td>
+      <td>18</td>
+      <td>0.0360</td>
+      <td>0.0000</td>
+      <td>0.0001</td>
+    </tr>
+    <tr>
+      <td>Oil to output</td>
+      <td>1</td>
+      <td>0.0200</td>
+      <td>0.0000</td>
+      <td>0.0036</td>
+    </tr>
+    <tr>
+      <td>Oil to output</td>
+      <td>3</td>
+      <td>0.2142</td>
+      <td>0.0000</td>
+      <td>0.0002</td>
+    </tr>
+    <tr>
+      <td>Oil to output</td>
+      <td>6</td>
+      <td>0.3033</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Oil to output</td>
+      <td>9</td>
+      <td>0.2673</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Oil to output</td>
+      <td>12</td>
+      <td>0.0621</td>
+      <td>0.0000</td>
+      <td>0.0043</td>
+    </tr>
+    <tr>
+      <td>Oil to output</td>
+      <td>18</td>
+      <td>0.6396</td>
+      <td>0.0000</td>
+      <td>0.3035</td>
+    </tr>
+    <tr>
+      <td>Output to unemployment</td>
+      <td>1</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Output to unemployment</td>
+      <td>3</td>
+      <td>0.0050</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Output to unemployment</td>
+      <td>6</td>
+      <td>0.0370</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Output to unemployment</td>
+      <td>9</td>
+      <td>0.6466</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Output to unemployment</td>
+      <td>12</td>
+      <td>0.2072</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>Output to unemployment</td>
+      <td>18</td>
+      <td>0.1652</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 5.</strong> The same comparison in numbers.</figcaption></figure>
+
+<div class="note"><strong>How to read this comparison</strong>
+<p><b>The DRGCT is the most conservative of the three, and that deserves an
+explanation rather than a boast.</b> US macro series are strongly and
+<i>linearly</i> predictable, and with <i>n</i> ≈ 800 the linear <i>F</i>-test has
+enormous power against exactly the alternative it was built for. It rejects
+almost everywhere. The smoothing benchmark also rejects almost everywhere, but
+in our runs it is <b>not size-controlled</b> at these conditioning dimensions
+(see the <a href="simulation.html">simulation page</a>), so its column is not
+evidence of anything.</p>
+<p>The right reading of a DRGCT non-rejection at, say, twelve months is
+therefore: <i>no evidence of predictive content beyond what the effect's own
+twelve-month history already carries</i> — not "no relationship". The DRGCT
+conditions on a twelve-dimensional own-past nonparametrically, which is a much
+harder benchmark to beat than the linear test's twelve coefficients.</p>
+<p>Where the DRGCT rejects and the linear test does not — money to prices at
+one month is the clearest case — you have evidence of genuinely nonlinear
+predictive content.</p></div>
+
+<h2 id="6-is-the-headline-a-lucky-draw">6. Is the headline a lucky draw?</h2>
+<p>The strongest result is oil prices to CPI inflation at one month. Before
+reporting it, it should survive the random draw of evaluation directions
+described in <a href="https://github.com/merwanroudane/DRGCT/blob/main/guide.html#58-check-that-the-result-is-not-an-artefact-of-the-random-directions">the guide's §5.8</a>.</p>
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Relation</th>
+      <th>Lag</th>
+      <th>Median p</th>
+      <th>5th pct</th>
+      <th>95th pct</th>
+      <th>Share rejecting</th>
+      <th>Merged p</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>WTI oil price -> CPI inflation</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.001</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 6.</strong> The headline re-run over thirty independent draws of the <code>L = 60</code> directions and of the network initialisation, data held fixed.</figcaption></figure>
+
+<p>It does, emphatically: <strong>all thirty draws reject</strong>, the median p-value is below
+0.001, and the merged (conservative) p-value is 0.000. Contrast this with the
+price–volume application, where the corresponding check found only 7% of draws
+rejecting — that is the difference between a real effect and a lucky seed.</p>
+<figure><img loading="lazy" src="assets/figures/macro_fig9_stability.png" alt="Figure 6"><figcaption><strong>Figure 6.</strong> Distribution of the p-value across thirty direction draws. Everything is in the rejection band.</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/macro_fig6_bootstrap_null.png" alt="Figure 7"><figcaption><strong>Figure 7.</strong> The bootstrap null distribution of <code>KS_n</code> for the headline test, with the observed statistic in terracotta. This is the figure that makes a p-value auditable.</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/macro_fig7_empirical_process.png" alt="Figure 8"><figcaption><strong>Figure 8.</strong> Real and imaginary parts of the empirical process at each of the sixty random directions, against the pointwise bootstrap envelope. Many directions escape the band — the departure from the null is broad, not an artefact of one lucky direction. Compare this with the price–volume case, where exactly one direction of twenty escaped.</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/macro_fig8_mdn_fit.png" alt="Figure 9"><figcaption><strong>Figure 9.</strong> Mixture density network diagnostic: pooled draws from the fitted conditional density against the empirical marginal of the lagged cause. A visible mismatch here would mean <code>G</code> is too small and the type I error is inflated.</figcaption></figure>
+
+<h2 id="7-caveats">7. Caveats</h2>
+<div class="warn"><strong>Five things to hold in mind</strong>
+<p><b>Stationarity.</b> Four of the eight transformed series fail the KPSS screen
+on the pooled sample. The sub-sample results in Section 4 rest on firmer ground
+than the pooled results in Section 3.</p>
+<p><b>Multiple testing.</b> Section 3 is 72 tests at the 5% level; roughly four
+false rejections are expected by chance. The argument here rests on
+<i>patterns</i> — consistent significance across adjacent lag orders and across
+sub-samples — not on any single cell. Apply Holm or Benjamini–Hochberg within a
+direction if you need a formal correction.</p>
+<p><b>Bivariate only.</b> Every test conditions on two series. Oil prices and
+inflation both respond to global demand; monetary policy and output both respond
+to fiscal shocks. Version 1.0 of the package cannot condition on a third series,
+which the paper itself flags as future work.</p>
+<p><b>Granger, not structural.</b> These are forecasting statements. They say
+nothing about what would happen under an intervention.</p>
+<p><b>Real-time versus revised.</b> FRED serves revised data. A forecaster in
+1975 did not see these numbers. Nothing here is a claim about real-time
+predictability.</p></div>
+
+<h2 id="8-reproducing-and-extending">8. Reproducing and extending</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># the full study, about ten minutes on twelve cores</span>
+python<span class="w"> </span>scripts/run_macro_application.py<span class="w"> </span>--jobs<span class="w"> </span>-1
+
+<span class="c1"># a coarser, faster pass</span>
+python<span class="w"> </span>scripts/run_macro_application.py<span class="w"> </span>--lags<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="m">6</span><span class="w"> </span><span class="m">12</span><span class="w"> </span>--skip-subsamples<span class="w"> </span>--jobs<span class="w"> </span>-1
+
+<span class="c1"># refresh the FRED data or add series</span>
+python<span class="w"> </span>data/fetch_macro.py<span class="w"> </span>--add<span class="w"> </span>GDPC1<span class="w"> </span>TB3MS
+</code></pre></div>
+
+<p>Your own relation, in five lines:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">drgct</span><span class="w"> </span><span class="kn">import</span> <span class="n">drgc_lag_scan</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">drgct.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_macro</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">load_macro</span><span class="p">()</span>
+<span class="n">scan</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">drgc_lag_scan</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;WTI oil price&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+                        <span class="n">m</span><span class="p">[</span><span class="s2">&quot;CPI inflation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+                        <span class="n">lags</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span> <span class="n">L</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">999</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The whole grid, including your own series, is one call:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">drgct.applications</span><span class="w"> </span><span class="kn">import</span> <span class="n">macro_study</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">macro_study</span><span class="p">(</span>
+    <span class="n">relations</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;M2 money growth&quot;</span><span class="p">,</span> <span class="s2">&quot;Nonfarm payrolls&quot;</span><span class="p">,</span> <span class="s2">&quot;Money to jobs&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)],</span>
+    <span class="n">periods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Full sample&quot;</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span> <span class="n">drgc_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">L</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">999</span><span class="p">),</span>
+    <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<h2 id="data-source">Data source</h2>
+<p>All series from <strong>FRED</strong>, Federal Reserve Bank of St. Louis, downloaded by
+<a href="https://github.com/merwanroudane/DRGCT/blob/main/data/fetch_macro.py"><code>data/fetch_macro.py</code></a>
+and bundled with the package so that everything here runs offline. Provenance
+is recorded in
+<a href="https://github.com/merwanroudane/DRGCT/blob/main/src/drgct/data/SOURCES_MACRO.md"><code>src/drgct/data/SOURCES_MACRO.md</code></a>.
+FRED series are in the public domain unless an individual series page says
+otherwise.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>Friedman, M. (1961). The lag in effect of monetary policy. <em>Journal of Political Economy</em> 69, 447–466.</li>
+<li>Hamilton, J. D. (1983). Oil and the macroeconomy since World War II. <em>Journal of Political Economy</em> 91, 228–248.</li>
+<li>Hui, Y., Liu, C. and Song, X. (2025). <em>Deep learning based doubly robust test for Granger causality.</em> <a href="https://arxiv.org/abs/2509.15798">arXiv:2509.15798</a>.</li>
+<li>McConnell, M. M. and Perez-Quiros, G. (2000). Output fluctuations in the United States: what has changed since the early 1980's? <em>American Economic Review</em> 90, 1464–1476.</li>
+<li>Okun, A. M. (1962). Potential GNP: its measurement and significance. <em>Proceedings of the Business and Economic Statistics Section</em>, American Statistical Association.</li>
+<li>Stock, J. H. and Watson, M. W. (2002). Has the business cycle changed and why? <em>NBER Macroeconomics Annual</em> 17, 159–218.</li>
+</ul>
+    <div class="pagefoot">
+      <div>
+        <strong>drgct 1.0.0</strong> · MIT licence · © 2026 Dr Merwan Roudane
+      </div>
+      <div>
+        <a href="https://github.com/merwanroudane/DRGCT">Source</a> ·
+        <a href="https://pypi.org/project/drgct/">PyPI</a> ·
+        <a href="https://arxiv.org/abs/2509.15798">Paper</a> ·
+        <a href="https://github.com/merwanroudane/DRGCT/issues">Report an issue</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<aside class="toc"><div class="group">On this page</div>
+  <a href="#1-the-questions">1. The questions</a>
+  <a href="#2-data-and-transformations">2. Data and transformations</a>
+  <a href="#3-results-the-pooled-sample">3. Results: the pooled sample</a>
+  <a href="#what-the-pooled-sample-says" class="h3">What the pooled sample says</a>
+  <a href="#4-before-and-after-the-great-moderation">4. Before and after the Great Moderation</a>
+  <a href="#5-three-tests-the-same-data">5. Three tests, the same data</a>
+  <a href="#6-is-the-headline-a-lucky-draw">6. Is the headline a lucky draw?</a>
+  <a href="#7-caveats">7. Caveats</a>
+  <a href="#8-reproducing-and-extending">8. Reproducing and extending</a>
+  <a href="#data-source">Data source</a>
+  <a href="#references">References</a>
+</aside>
+
+</div>
+</body>
+</html>

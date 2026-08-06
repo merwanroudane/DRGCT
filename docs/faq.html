@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ — drgct</title>
+<meta name="description" content="Short answers. Long answers are in GUIDE.md and THEORY.md.">
+<meta name="author" content="Dr Merwan Roudane">
+<link rel="canonical" href="https://merwanroudane.github.io/DRGCT/faq.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="FAQ — drgct">
+<meta property="og:description" content="Short answers. Long answers are in GUIDE.md and THEORY.md.">
+<meta property="og:url" content="https://merwanroudane.github.io/DRGCT/faq.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231F4E79'/><text x='50' y='70' font-size='58' font-family='Georgia,serif' fill='white' text-anchor='middle'>D</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="mark">drgct</span>
+    <span class="tagline">Deep-learning based doubly robust test<br>for Granger causality</span>
+  </a>
+  <button class="navtoggle" onclick="document.getElementById('sidebar').classList.toggle('open')">Menu</button>
+  <nav>
+    <div class="group">Start</div>
+    <a href="index.html">Overview</a>
+    <a href="guide.html">Applied guide</a>
+    <div class="group">Method</div>
+    <a href="theory.html">Theory</a>
+    <a href="api.html">API reference</a>
+    <a href="faq.html" class="active">FAQ</a>
+    <div class="group">Results</div>
+    <a href="macro.html">US macro application</a>
+    <a href="finance.html">Price–volume application</a>
+    <a href="simulation.html">Simulation evidence</a>
+  </nav>
+  <div class="ext">
+    <a href="https://github.com/merwanroudane/DRGCT">GitHub repository</a>
+    <a href="https://pypi.org/project/drgct/">PyPI package</a>
+    <a href="https://arxiv.org/abs/2509.15798">The paper (arXiv)</a>
+  </div>
+  <div class="byline">
+    Built and maintained by<br>
+    <strong>Dr Merwan Roudane</strong><br>
+    <a href="mailto:merwanroudane920@gmail.com">merwanroudane920@gmail.com</a><br>
+    <a href="https://github.com/merwanroudane">github.com/merwanroudane</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="content md-body">
+<h1 id="faq">FAQ</h1>
+<p>Short answers. Long answers are in <a href="guide.html"><code>GUIDE.md</code></a> and
+<a href="theory.html"><code>THEORY.md</code></a>.</p>
+<hr />
+<h3 id="what-exactly-is-the-null-hypothesis">What exactly is the null hypothesis?</h3>
+<p><code>X</code> does not Granger-cause <code>Y</code> <strong>in mean</strong>:
+<code>E[Y_t | X_{t−1},…,X_{t−p}, Y_{t−1},…,Y_{t−q}] = E[Y_t | Y_{t−1},…,Y_{t−q}]</code>.
+The test says nothing about causality in variance, in quantiles or in
+distribution, and — as always with Granger causality — nothing about
+structural causality in the sense of an intervention.</p>
+<h3 id="why-doubly-robust-nothing-is-being-estimated-causally">Why "doubly robust"? Nothing is being estimated causally.</h3>
+<p>The term is borrowed from the missing-data and treatment-effect literature
+(Robins, Rotnitzky and Zhao, 1994) and refers to the <em>algebraic</em> structure of
+the moment condition, not to a causal-inference design. Two nuisance functions
+enter — the conditional mean <code>m</code> and the conditional characteristic function
+<code>φ</code> — and the bias of the test statistic is proportional to the <strong>product</strong> of
+their estimation errors. Each may converge slower than <code>n^{−1/2}</code>; the product
+still vanishes fast enough. That is what makes deep networks admissible in a
+classical testing framework.</p>
+<h3 id="do-i-need-a-gpu">Do I need a GPU?</h3>
+<p>No. The networks are tiny (one hidden layer of width <code>5·lag</code> by default) and
+CPU is faster than GPU for them, because kernel-launch overhead dominates.
+Pass <code>mlp=MLPConfig(device="cuda")</code> if you insist.</p>
+<h3 id="how-long-does-one-test-take">How long does one test take?</h3>
+<p>Roughly 1.5 s at <code>n = 500, lag = 1</code>, and 8–12 s at <code>n = 750, lag = 10</code> on a
+laptop CPU. Almost all of it is network training. The bootstrap is
+milliseconds regardless of <code>B</code>, because it re-uses the fitted quantities.</p>
+<h3 id="why-is-b-free-but-l-is-not">Why is <code>B</code> free but <code>L</code> is not?</h3>
+<p><code>B</code> only redraws the multipliers and multiplies a stored <code>(n_eff, L)</code> matrix.
+<code>L</code> adds a column to that matrix <em>and</em> to the MDN pseudo-sample projection —
+still cheap, just not free. Neither touches the networks. Use <code>B = 999</code> or
+<code>1999</code> always; raise <code>L</code> to 50–100 whenever <code>p + q ≥ 10</code>.</p>
+<h3 id="my-p-value-changes-when-i-change-the-seed-is-the-test-broken">My p-value changes when I change the seed. Is the test broken?</h3>
+<p>No, and this is the single most important practical caveat. Step 2(d) of
+Algorithm 1 draws <code>L</code> directions <code>(μ_ℓ, ν_ℓ)</code> at random. Each draw yields a
+<em>valid</em> test, but with <code>L = 20</code> in a 20-dimensional conditioning space, the
+draws differ enough that the p-value carries simulation noise on top of
+sampling noise. Run <code>drgc_stability(x, y, lag, n_draws=30)</code>, report the
+distribution, and quote the <code>merged_pvalue</code> — <code>min(1, 2 × median)</code>, valid
+under arbitrary dependence by Rüger's inequality. Raising <code>L</code> shrinks the
+noise directly.</p>
+<p>In the bundled application this mattered: one draw put the S&amp;P 500 lag-10
+test at <code>p = 0.008</code> while the median across 30 draws was 0.52 and only 6.7%
+of draws rejected. Reporting the first number alone would have been wrong.</p>
+<h3 id="how-do-i-choose-p-and-q">How do I choose <code>p</code> and <code>q</code>?</h3>
+<p>Set them generously — that is the entire point of the method. Kernel-based
+causality tests break down past two or three lags; the DRGCT does not.
+Scan the range with <code>drgc_lag_scan</code> and report the profile rather than
+pre-selecting one lag. For daily financial data 10 is ample; for monthly macro
+data with policy lags, 12–18.</p>
+<h3 id="p-q"><code>p ≠ q</code>?</h3>
+<p>Allowed. <code>drgc_test(x, y, p=12, q=6)</code>. The paper maintains <code>p ≤ q</code>; when
+<code>p &gt; q</code> the effective sample starts at <code>max(p, q) + 1</code> instead.</p>
+<h3 id="what-should-g-be">What should <code>G</code> be?</h3>
+<p>10 unless you have a reason. Lemma 3 makes the trade-off explicit: too small
+and the mixture cannot approximate <code>f_{X|Y}</code> (bias → <strong>inflated type I
+error</strong>); too large and the estimate is noisy (variance in <code>KS_n</code>).
+Cross-validate over <code>{5, 10, 15, 20}</code> when <code>p ≥ 5</code>, and always look at
+<code>plot_mdn_fit</code>.</p>
+<h3 id="does-standardising-the-data-change-the-result">Does standardising the data change the result?</h3>
+<p>Not the p-value. Rescaling <code>Y</code> multiplies <code>KS_n</code> and every bootstrap replicate
+<code>KS*_n</code> by the same constant, so the rank of the observed statistic in its
+bootstrap distribution — and hence the p-value — is unchanged. It does change
+how well the networks train, which is why <code>standardize=True</code> is the default.</p>
+<h3 id="should-i-use-doubly_robustfalse">Should I use <code>doubly_robust=False</code>?</h3>
+<p>Only to demonstrate why you should not. It builds the naive process (5),
+which has no valid null distribution. The paper documents this as
+over-rejection (empirical sizes of 0.151 at <code>n = 1000</code> and 0.321 at
+<code>n = 2000</code> where the true size is 5%). In this implementation the failure runs
+the other way — 0.000 to 0.020 at <code>n = 500</code>, 0.000 at <code>n = 1000</code> — because the
+in-sample least-squares residual is near-orthogonal to functions of
+<code>Y_{t−1}</code>, shrinking the naive statistic while leaving its bootstrap null
+unchanged. Either way the naive test is not correctly sized. See
+<code>results/tables/table3_size.*</code>, <code>table3b_naive_size.*</code> and
+<a href="simulation.html"><code>results/README.md</code></a>.</p>
+<h3 id="can-i-test-three-or-more-series">Can I test three or more series?</h3>
+<p>Not in version 1.0. The paper is explicit that the bivariate case is what is
+proved, and flags multivariate extension (<code>X_t</code> and <code>Z_t</code> jointly causing
+<code>Y_t</code>) and panel data as future work. A pragmatic interim approach is to run
+pairwise tests and be candid that you have not conditioned on the third
+series.</p>
+<h3 id="can-i-test-causality-in-variance-or-in-quantiles">Can I test causality in variance, or in quantiles?</h3>
+<p>Not with this test. It targets the conditional <strong>mean</strong>. For causality in risk
+see Hong, Liu and Wang (2009); for quantile causality, the quantile-regression
+literature.</p>
+<h3 id="does-it-handle-non-stationary-data">Does it handle non-stationary data?</h3>
+<p>No. Assumption 1 requires strict stationarity and exponential β-mixing.
+Transform first, and verify with <code>check_stationarity</code> (which requires ADF to
+reject <em>and</em> KPSS not to reject). Cointegrated levels need a VECM-style
+framing that is outside this package's scope.</p>
+<h3 id="what-about-missing-values-and-irregular-sampling">What about missing values and irregular sampling?</h3>
+<p>Merge on the date index with an inner join <strong>before</strong> differencing, and drop
+non-finite rows. Do not forward-fill: an imputed holiday becomes an artificial
+zero return that the test reads as structure. Irregular sampling breaks the
+fixed-lag structure entirely.</p>
+<h3 id="how-small-can-n-be">How small can <code>n</code> be?</h3>
+<p>The code refuses fewer than 30 usable observations. Realistically you want at
+least 30 observations per lag, so <code>n ≈ 300</code> for lag 10. Below <code>n ≈ 200</code> the
+networks have too little to learn from and power collapses.</p>
+<h3 id="the-p-value-printed-as-00000-do-i-write-p-0">The p-value printed as 0.0000. Do I write "p = 0"?</h3>
+<p>No. It means <code>p &lt; 1/B</code>. With <code>B = 999</code>, write <code>p &lt; 0.001</code>. Raise <code>B</code> to 9999
+if you need a finer number.</p>
+<h3 id="why-is-the-smoothing-benchmark-rejecting-so-rarely">Why is the smoothing benchmark rejecting so rarely?</h3>
+<p>Because smoothing tests lose size control once the conditioning dimension
+exceeds two or three — Table 3 of the paper reports NHKJ sizes between 0.003
+and 0.043 at lag ≥ 2 against a 5% nominal level. That is the curse of
+dimensionality, and it is the problem the DRGCT exists to solve. Read a NHKJ
+non-rejection at lag ≥ 3 as weak evidence, and say so in the paper.</p>
+<p>Note that our own <code>nhkj_test</code> is undersized in some cells (0.000–0.005 in the
+exponential-mean design S2) and <em>over</em>-sized in others (0.170 at lag 1 in S1),
+and unlike the paper's NHKJ it does not lose power as the lag order grows.
+Since its size is not controlled, do not read its power numbers as a fair
+comparison — see <a href="simulation.html"><code>results/README.md</code></a>.</p>
+<h3 id="is-nhkj_test-the-actual-test-from-nishiyama-et-al-2011">Is <code>nhkj_test</code> the actual test from Nishiyama et al. (2011)?</h3>
+<p>No — it is a member of that class, not a line-by-line transcription. It
+implements a Zheng (1996) / Fan–Li (1996) degenerate U-statistic conditional
+moment test with the fourth-order Gaussian kernel and <code>h = c·n^{−0.15}</code>
+bandwidth schedule the DRGCT paper specifies for its benchmark. Its
+finite-sample behaviour in our runs differs from the paper's NHKJ (see the
+previous answer), which is itself informative: smoothing tests of this class
+are very sensitive to the bandwidth. Describe it in a paper as "a
+smoothing-based nonparametric benchmark", and cite the paper's own numbers
+when characterising NHKJ.</p>
+<h3 id="why-do-the-bundled-application-results-differ-from-table-6-of-the-paper">Why do the bundled application results differ from Table 6 of the paper?</h3>
+<p>Two reasons, both documented in <a href="simulation.html"><code>results/README.md</code></a>:
+the paper does not name its data vendor (volume series in particular differ
+substantially across vendors), and the CSI 300 file here uses the
+exchange-traded tracker <code>510300.SS</code> because Yahoo truncates the index series.
+The Nikkei 225 and CSI 300 findings agree with the paper qualitatively; the
+S&amp;P 500 does not. Swap in your vendor's CSV — same two columns — and every
+script runs unchanged.</p>
+<h3 id="are-the-shipped-simulation-results-the-papers-full-grid">Are the shipped simulation results the paper's full grid?</h3>
+<p>No. The paper uses 1000 replications at <code>n ∈ {500, 1000, 2000}</code> with
+<code>B = 1000</code>; the shipped tables use fewer, so that the run finishes in hours
+rather than days. Every rejection frequency is reported with its Monte-Carlo
+standard error, and <code>results/README.md</code> records the exact commands. Run
+<code>python scripts/run_simulation.py --reps 1000 --ns 500 1000 2000 -B 1000 --jobs N</code>
+for the paper's grid.</p>
+<h3 id="is-the-package-deterministic">Is the package deterministic?</h3>
+<p>Given a seed and a fixed machine and PyTorch version, yes — bit-identical.
+Across machines or PyTorch versions, floating-point non-determinism can move
+the p-value in the third decimal. Never build an argument on <code>p = 0.0499</code>.</p>
+<h3 id="how-do-i-cite-this">How do I cite this?</h3>
+<p>Cite the paper and, if it helped, the software:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">drgct</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">drgct</span><span class="o">.</span><span class="n">cite</span><span class="p">(</span><span class="s2">&quot;bibtex&quot;</span><span class="p">))</span>
+</code></pre></div>
+
+<h3 id="where-do-i-get-it-and-where-do-i-report-a-bug">Where do I get it, and where do I report a bug?</h3>
+<p>Install from PyPI: <a href="https://pypi.org/project/drgct/">https://pypi.org/project/drgct/</a> (<code>pip install drgct</code>).
+Report bugs at <a href="https://github.com/merwanroudane/DRGCT/issues">https://github.com/merwanroudane/DRGCT/issues</a>. Please include
+the output of</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">torch</span><span class="o">,</span><span class="w"> </span><span class="nn">numpy</span><span class="o">,</span><span class="w"> </span><span class="nn">drgct</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">drgct</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</code></pre></div>
+
+<p>along with a minimal reproducible example.</p>
+    <div class="pagefoot">
+      <div>
+        <strong>drgct 1.0.0</strong> · MIT licence · © 2026 Dr Merwan Roudane
+      </div>
+      <div>
+        <a href="https://github.com/merwanroudane/DRGCT">Source</a> ·
+        <a href="https://pypi.org/project/drgct/">PyPI</a> ·
+        <a href="https://arxiv.org/abs/2509.15798">Paper</a> ·
+        <a href="https://github.com/merwanroudane/DRGCT/issues">Report an issue</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<aside class="toc"><div class="group">On this page</div>
+  <a href="#what-exactly-is-the-null-hypothesis" class="h3">What exactly is the null hypothesis?</a>
+  <a href="#why-doubly-robust-nothing-is-being-estimated-causally" class="h3">Why &quot;doubly robust&quot;? Nothing is being estimated causally.</a>
+  <a href="#do-i-need-a-gpu" class="h3">Do I need a GPU?</a>
+  <a href="#how-long-does-one-test-take" class="h3">How long does one test take?</a>
+  <a href="#why-is-b-free-but-l-is-not" class="h3">Why is B free but L is not?</a>
+  <a href="#my-p-value-changes-when-i-change-the-seed-is-the-test-broken" class="h3">My p-value changes when I change the seed. Is the test broken?</a>
+  <a href="#how-do-i-choose-p-and-q" class="h3">How do I choose p and q?</a>
+  <a href="#p-q" class="h3">p ≠ q?</a>
+  <a href="#what-should-g-be" class="h3">What should G be?</a>
+  <a href="#does-standardising-the-data-change-the-result" class="h3">Does standardising the data change the result?</a>
+  <a href="#should-i-use-doubly_robustfalse" class="h3">Should I use doubly_robust=False?</a>
+  <a href="#can-i-test-three-or-more-series" class="h3">Can I test three or more series?</a>
+  <a href="#can-i-test-causality-in-variance-or-in-quantiles" class="h3">Can I test causality in variance, or in quantiles?</a>
+  <a href="#does-it-handle-non-stationary-data" class="h3">Does it handle non-stationary data?</a>
+  <a href="#what-about-missing-values-and-irregular-sampling" class="h3">What about missing values and irregular sampling?</a>
+  <a href="#how-small-can-n-be" class="h3">How small can n be?</a>
+  <a href="#the-p-value-printed-as-00000-do-i-write-p-0" class="h3">The p-value printed as 0.0000. Do I write &quot;p = 0&quot;?</a>
+  <a href="#why-is-the-smoothing-benchmark-rejecting-so-rarely" class="h3">Why is the smoothing benchmark rejecting so rarely?</a>
+  <a href="#is-nhkj_test-the-actual-test-from-nishiyama-et-al-2011" class="h3">Is nhkj_test the actual test from Nishiyama et al. (2011)?</a>
+  <a href="#why-do-the-bundled-application-results-differ-from-table-6-of-the-paper" class="h3">Why do the bundled application results differ from Table 6 of the paper?</a>
+  <a href="#are-the-shipped-simulation-results-the-papers-full-grid" class="h3">Are the shipped simulation results the paper&#x27;s full grid?</a>
+  <a href="#is-the-package-deterministic" class="h3">Is the package deterministic?</a>
+  <a href="#how-do-i-cite-this" class="h3">How do I cite this?</a>
+  <a href="#where-do-i-get-it-and-where-do-i-report-a-bug" class="h3">Where do I get it, and where do I report a bug?</a>
+</aside>
+
+</div>
+</body>
+</html>

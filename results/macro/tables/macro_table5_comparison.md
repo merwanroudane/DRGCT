@@ -1,0 +1,42 @@
+**DRGCT against a linear VAR $F$-test and a smoothing-based nonparametric benchmark: bootstrap and asymptotic p-values**
+
+| Relation               |   Lag |   DRGCT |   Linear VAR |   NHKJ |
+|:-----------------------|------:|--------:|-------------:|-------:|
+| MP to output           |     1 |   0.002 |        0.007 |  0.271 |
+| MP to output           |     3 |   0.217 |        0.049 |  0.073 |
+| MP to output           |     6 |   0.104 |        0.162 |  0.000 |
+| MP to output           |     9 |   0.477 |        0.152 |  0.001 |
+| MP to output           |    12 |   0.559 |        0.025 |  0.030 |
+| MP to output           |    18 |   0.616 |        0.073 |  0.028 |
+| MP to prices           |     1 |   0.143 |        0.000 |  0.000 |
+| MP to prices           |     3 |   0.059 |        0.000 |  0.000 |
+| MP to prices           |     6 |   0.106 |        0.000 |  0.000 |
+| MP to prices           |     9 |   0.431 |        0.000 |  0.000 |
+| MP to prices           |    12 |   0.089 |        0.000 |  0.000 |
+| MP to prices           |    18 |   0.560 |        0.001 |  0.039 |
+| Money to prices        |     1 |   0.022 |        0.084 |  0.000 |
+| Money to prices        |     3 |   0.105 |        0.000 |  0.000 |
+| Money to prices        |     6 |   0.013 |        0.000 |  0.000 |
+| Money to prices        |     9 |   0.988 |        0.004 |  0.000 |
+| Money to prices        |    12 |   0.173 |        0.014 |  0.000 |
+| Money to prices        |    18 |   0.929 |        0.001 |  0.005 |
+| Oil to prices          |     1 |   0.000 |        0.000 |  0.000 |
+| Oil to prices          |     3 |   0.000 |        0.000 |  0.000 |
+| Oil to prices          |     6 |   0.000 |        0.000 |  0.000 |
+| Oil to prices          |     9 |   0.349 |        0.000 |  0.000 |
+| Oil to prices          |    12 |   0.584 |        0.000 |  0.000 |
+| Oil to prices          |    18 |   0.036 |        0.000 |  0.000 |
+| Oil to output          |     1 |   0.020 |        0.000 |  0.004 |
+| Oil to output          |     3 |   0.214 |        0.000 |  0.000 |
+| Oil to output          |     6 |   0.303 |        0.000 |  0.000 |
+| Oil to output          |     9 |   0.267 |        0.000 |  0.000 |
+| Oil to output          |    12 |   0.062 |        0.000 |  0.004 |
+| Oil to output          |    18 |   0.640 |        0.000 |  0.303 |
+| Output to unemployment |     1 |   0.000 |        0.000 |  0.000 |
+| Output to unemployment |     3 |   0.005 |        0.000 |  0.000 |
+| Output to unemployment |     6 |   0.037 |        0.000 |  0.000 |
+| Output to unemployment |     9 |   0.647 |        0.000 |  0.000 |
+| Output to unemployment |    12 |   0.207 |        0.000 |  0.000 |
+| Output to unemployment |    18 |   0.165 |        0.000 |  0.000 |
+
+_Smoothing-based tests lose size control once the conditioning dimension exceeds two or three, so a non-rejection in the NHKJ column at lag 6 or beyond is weak evidence.  The linear column is correctly sized but blind to nonlinearity._

@@ -1,0 +1,1368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API reference — drgct</title>
+<meta name="description" content="Every public function, every argument, every return field. Version 1.0.0 (pip install drgct — PyPI).">
+<meta name="author" content="Dr Merwan Roudane">
+<link rel="canonical" href="https://merwanroudane.github.io/DRGCT/api.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="API reference — drgct">
+<meta property="og:description" content="Every public function, every argument, every return field. Version 1.0.0 (pip install drgct — PyPI).">
+<meta property="og:url" content="https://merwanroudane.github.io/DRGCT/api.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231F4E79'/><text x='50' y='70' font-size='58' font-family='Georgia,serif' fill='white' text-anchor='middle'>D</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="mark">drgct</span>
+    <span class="tagline">Deep-learning based doubly robust test<br>for Granger causality</span>
+  </a>
+  <button class="navtoggle" onclick="document.getElementById('sidebar').classList.toggle('open')">Menu</button>
+  <nav>
+    <div class="group">Start</div>
+    <a href="index.html">Overview</a>
+    <a href="guide.html">Applied guide</a>
+    <div class="group">Method</div>
+    <a href="theory.html">Theory</a>
+    <a href="api.html" class="active">API reference</a>
+    <a href="faq.html">FAQ</a>
+    <div class="group">Results</div>
+    <a href="macro.html">US macro application</a>
+    <a href="finance.html">Price–volume application</a>
+    <a href="simulation.html">Simulation evidence</a>
+  </nav>
+  <div class="ext">
+    <a href="https://github.com/merwanroudane/DRGCT">GitHub repository</a>
+    <a href="https://pypi.org/project/drgct/">PyPI package</a>
+    <a href="https://arxiv.org/abs/2509.15798">The paper (arXiv)</a>
+  </div>
+  <div class="byline">
+    Built and maintained by<br>
+    <strong>Dr Merwan Roudane</strong><br>
+    <a href="mailto:merwanroudane920@gmail.com">merwanroudane920@gmail.com</a><br>
+    <a href="https://github.com/merwanroudane">github.com/merwanroudane</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="content md-body">
+<h1 id="drgct-complete-syntax-reference"><code>drgct</code> — Complete Syntax Reference</h1>
+<p>Every public function, every argument, every return field. Version 1.0.0
+(<code>pip install drgct</code> — <a href="https://pypi.org/project/drgct/">PyPI</a>).</p>
+<p>For the <em>how-to</em>, read <a href="guide.html"><code>GUIDE.md</code></a>. For the <em>why</em>, read
+<a href="theory.html"><code>THEORY.md</code></a>.</p>
+<hr />
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#import-surface">Import surface</a></li>
+<li><a href="#1-the-test--drgctcore">1. The test — <code>drgct.core</code></a></li>
+<li><a href="#drgc_test"><code>drgc_test</code></a></li>
+<li><a href="#drgctresult"><code>DRGCTResult</code></a></li>
+<li><a href="#drgc_lag_scan"><code>drgc_lag_scan</code></a></li>
+<li><a href="#drgc_both_directions"><code>drgc_both_directions</code></a></li>
+<li><a href="#drgc_stability"><code>drgc_stability</code></a></li>
+<li><a href="#2-networks--drgctnets">2. Networks — <code>drgct.nets</code></a></li>
+<li><a href="#mlpconfig"><code>MLPConfig</code></a> · <a href="#mdnconfig"><code>MDNConfig</code></a></li>
+<li><a href="#mlp"><code>MLP</code></a> · <a href="#mixturedensitynetwork"><code>MixtureDensityNetwork</code></a></li>
+<li><a href="#fit_conditional_mean"><code>fit_conditional_mean</code></a> · <a href="#fit_conditional_density"><code>fit_conditional_density</code></a></li>
+<li><a href="#architecture-helpers"><code>paper_width</code>, <code>theory_width</code>, <code>theory_depth</code></a></li>
+<li><a href="#3-benchmark--drgctnhkj">3. Benchmark — <code>drgct.nhkj</code></a></li>
+<li><a href="#4-designs--drgctdgp">4. Designs — <code>drgct.dgp</code></a></li>
+<li><a href="#5-monte-carlo--drgctsimulate">5. Monte Carlo — <code>drgct.simulate</code></a></li>
+<li><a href="#6-data--drgctdatasets">6. Data — <code>drgct.datasets</code></a></li>
+<li><a href="#7-applications--drgctapplications">7. Applications — <code>drgct.applications</code></a></li>
+<li><a href="#8-tables--drgcttables">8. Tables — <code>drgct.tables</code></a></li>
+<li><a href="#9-figures--drgctplots">9. Figures — <code>drgct.plots</code></a></li>
+<li><a href="#10-utilities--drgctutils">10. Utilities — <code>drgct.utils</code></a></li>
+<li><a href="#11-command-line">11. Command line</a></li>
+<li><a href="#12-argument-cheat-sheet">12. Argument cheat sheet</a></li>
+</ul>
+<hr />
+<h2 id="import-surface">Import surface</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">drgct</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="c1"># the test</span>
+    <span class="n">drgc_test</span><span class="p">,</span> <span class="n">drgc_lag_scan</span><span class="p">,</span> <span class="n">drgc_both_directions</span><span class="p">,</span> <span class="n">drgc_stability</span><span class="p">,</span> <span class="n">DRGCTResult</span><span class="p">,</span>
+    <span class="c1"># benchmark</span>
+    <span class="n">nhkj_test</span><span class="p">,</span> <span class="n">NHKJResult</span><span class="p">,</span>
+    <span class="c1"># simulation</span>
+    <span class="n">simulate_dgp</span><span class="p">,</span> <span class="n">monte_carlo</span><span class="p">,</span> <span class="n">summarize</span><span class="p">,</span> <span class="n">size_power_tables</span><span class="p">,</span>
+    <span class="n">DGP_NAMES</span><span class="p">,</span> <span class="n">SIZE_DGPS</span><span class="p">,</span> <span class="n">POWER_DGPS</span><span class="p">,</span>
+    <span class="c1"># data</span>
+    <span class="n">load_index</span><span class="p">,</span> <span class="n">load_all</span><span class="p">,</span> <span class="n">available_datasets</span><span class="p">,</span> <span class="n">to_percentage_changes</span><span class="p">,</span>
+    <span class="n">subsample</span><span class="p">,</span> <span class="n">describe</span><span class="p">,</span> <span class="n">INDEX_KEYS</span><span class="p">,</span> <span class="n">INDEX_LABELS</span><span class="p">,</span> <span class="n">PAPER_PERIODS</span><span class="p">,</span>
+    <span class="c1"># applications</span>
+    <span class="n">price_volume_study</span><span class="p">,</span> <span class="n">rolling_causality</span><span class="p">,</span> <span class="n">lag_scan_frame</span><span class="p">,</span> <span class="n">DIRECTIONS</span><span class="p">,</span>
+    <span class="c1"># configuration and utilities</span>
+    <span class="n">MLPConfig</span><span class="p">,</span> <span class="n">MDNConfig</span><span class="p">,</span> <span class="n">set_seed</span><span class="p">,</span> <span class="n">check_stationarity</span><span class="p">,</span> <span class="n">build_lag_design</span><span class="p">,</span>
+    <span class="c1"># submodules</span>
+    <span class="n">tables</span><span class="p">,</span> <span class="n">plots</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">drgct</span>
+<span class="n">drgct</span><span class="o">.</span><span class="n">__version__</span>          <span class="c1"># &#39;1.0.0&#39;</span>
+<span class="n">drgct</span><span class="o">.</span><span class="n">PAPER</span>                <span class="c1"># metadata of the source article</span>
+<span class="n">drgct</span><span class="o">.</span><span class="n">cite</span><span class="p">()</span>               <span class="c1"># citation text; cite(&#39;bibtex&#39;) for BibTeX</span>
+</code></pre></div>
+
+<hr />
+<h2 id="1-the-test-drgctcore">1. The test — <code>drgct.core</code></h2>
+<h3 id="drgc_test"><code>drgc_test</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">drgc_test</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+    <span class="n">p</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">G</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">w_lower</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">w_upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">multiplier</span><span class="o">=</span><span class="s2">&quot;rademacher&quot;</span><span class="p">,</span>
+    <span class="n">doubly_robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">standardize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">mlp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mdn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">alphas</span><span class="o">=</span><span class="p">(</span><span class="mf">0.10</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+    <span class="n">x_name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">y_name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span>
+    <span class="n">return_networks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DRGCTResult</span>
+</code></pre></div>
+
+<p>Tests <code>H0 : X does not Granger-cause Y in mean</code>. Implements Steps 1–5 of
+Algorithm 1 of Hui, Liu and Song (2025).</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td>array_like</td>
+<td>—</td>
+<td>Candidate <strong>cause</strong> <code>X_t</code>. 1-D, finite, ≥ 10 observations. Accepts list, ndarray, <code>pandas.Series</code>.</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td>array_like</td>
+<td>—</td>
+<td><strong>Effect</strong> <code>Y_t</code>, same length as <code>x</code>, aligned in calendar time.</td>
+</tr>
+<tr>
+<td><code>lag</code></td>
+<td>int</td>
+<td><code>None</code></td>
+<td>Common lag order, sets <code>p = q = lag</code>. Either <code>lag</code> or both <code>p</code> and <code>q</code> are required.</td>
+</tr>
+<tr>
+<td><code>p</code></td>
+<td>int</td>
+<td><code>None</code></td>
+<td>Lags of <code>X</code> entering <code>W_{t−1}</code>.</td>
+</tr>
+<tr>
+<td><code>q</code></td>
+<td>int</td>
+<td><code>None</code></td>
+<td>Lags of <code>Y</code> entering <code>W_{t−1}</code>. The paper maintains <code>p ≤ q</code>; <code>p &gt; q</code> is allowed and starts the effective sample at <code>max(p,q)+1</code>.</td>
+</tr>
+<tr>
+<td><code>G</code></td>
+<td>int</td>
+<td><code>10</code></td>
+<td>Mixture components of the MDN. Too small → bias → size distortion; too large → variance.</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>int</td>
+<td><code>20</code></td>
+<td>Number of random pairs <code>(μ_ℓ, ν_ℓ)</code>. Higher → more power, more cost (linear), less simulation noise.</td>
+</tr>
+<tr>
+<td><code>M</code></td>
+<td>int</td>
+<td><code>20</code></td>
+<td>Pseudo-samples drawn per observation from the fitted conditional density.</td>
+</tr>
+<tr>
+<td><code>B</code></td>
+<td>int</td>
+<td><code>1000</code></td>
+<td>Multiplier-bootstrap replications. Essentially free — no re-estimation.</td>
+</tr>
+<tr>
+<td><code>alpha</code></td>
+<td>float</td>
+<td><code>0.05</code></td>
+<td>Headline level driving <code>.reject</code>.</td>
+</tr>
+<tr>
+<td><code>w_lower</code>, <code>w_upper</code></td>
+<td>float</td>
+<td><code>-1.0</code>, <code>1.0</code></td>
+<td>Bounds of the uniform box <code>W = W₁ × W₂</code> from which directions are drawn.</td>
+</tr>
+<tr>
+<td><code>multiplier</code></td>
+<td>str</td>
+<td><code>"rademacher"</code></td>
+<td><code>ξ_t</code> distribution: <code>"rademacher"</code> (±1), <code>"mammen"</code>, <code>"normal"</code>. The first two have bounded support, as Theorem 4 requires.</td>
+</tr>
+<tr>
+<td><code>doubly_robust</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td><code>False</code> builds the naive process (5), i.e. drops <code>φ̂(ν \| Y_{t−1})</code>. Provided to reproduce the size failure of Section 4. <strong>Never use for inference.</strong></td>
+</tr>
+<tr>
+<td><code>standardize</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>z-score inputs. Leaves the p-value invariant; greatly stabilises training.</td>
+</tr>
+<tr>
+<td><code>mlp</code></td>
+<td><code>MLPConfig</code> or dict</td>
+<td><code>None</code></td>
+<td>Conditional-mean network hyper-parameters. A dict is splatted into <code>MLPConfig</code>.</td>
+</tr>
+<tr>
+<td><code>mdn</code></td>
+<td><code>MDNConfig</code> or dict</td>
+<td><code>None</code></td>
+<td>Density network hyper-parameters. <code>G</code> overrides <code>mdn.n_components</code>.</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td>int</td>
+<td><code>None</code></td>
+<td>Master seed: network init, <code>(μ,ν)</code> draw, MDN samples, bootstrap multipliers.</td>
+</tr>
+<tr>
+<td><code>alphas</code></td>
+<td>sequence</td>
+<td><code>(0.10, 0.05, 0.01)</code></td>
+<td>Levels at which bootstrap critical values are reported.</td>
+</tr>
+<tr>
+<td><code>x_name</code>, <code>y_name</code></td>
+<td>str</td>
+<td><code>"X"</code>, <code>"Y"</code></td>
+<td>Labels used in <code>.summary()</code> and <code>.direction</code>.</td>
+</tr>
+<tr>
+<td><code>return_networks</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>Attach the fitted models and standardised inputs to <code>result.settings["networks"]</code>. Required by <code>plot_mdn_fit</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Raises</strong> <code>ValueError</code> if neither <code>lag</code> nor <code>(p, q)</code> is given; if <code>x</code> and <code>y</code>
+have different lengths; if either contains NaN/inf; if <code>n − max(p,q) &lt; 30</code>.</p>
+<p><strong>Examples</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># minimal</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">drgc_test</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># fully specified, reproducible, publication settings</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">drgc_test</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">G</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">1999</span><span class="p">,</span>
+    <span class="n">w_lower</span><span class="o">=-</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">w_upper</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">multiplier</span><span class="o">=</span><span class="s2">&quot;mammen&quot;</span><span class="p">,</span>
+    <span class="n">mlp</span><span class="o">=</span><span class="n">MLPConfig</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">3e-3</span><span class="p">),</span>
+    <span class="n">mdn</span><span class="o">=</span><span class="n">MDNConfig</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span> <span class="n">min_sigma</span><span class="o">=</span><span class="mf">2e-2</span><span class="p">),</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">x_name</span><span class="o">=</span><span class="s2">&quot;oil&quot;</span><span class="p">,</span> <span class="n">y_name</span><span class="o">=</span><span class="s2">&quot;cpi&quot;</span><span class="p">,</span>
+    <span class="n">return_networks</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># reproduce the paper&#39;s naive-plug-in failure</span>
+<span class="n">naive</span> <span class="o">=</span> <span class="n">drgc_test</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">doubly_robust</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h3 id="drgctresult"><code>DRGCTResult</code></h3>
+<p>Dataclass returned by <code>drgc_test</code>.</p>
+<p><strong>Scalar fields</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ks_stat</code></td>
+<td>float</td>
+<td><code>KS_n</code> of equation (10). Scale is specification-dependent — compare only to <code>critical_values</code>.</td>
+</tr>
+<tr>
+<td><code>pvalue</code></td>
+<td>float</td>
+<td><code>p*_n = B⁻¹ Σ_b 1{KS*_{n,b} ≥ KS_n}</code>. A value of 0 means <code>&lt; 1/B</code>.</td>
+</tr>
+<tr>
+<td><code>reject</code></td>
+<td>bool</td>
+<td><code>pvalue &lt; alpha</code>.</td>
+</tr>
+<tr>
+<td><code>alpha</code></td>
+<td>float</td>
+<td>Headline level.</td>
+</tr>
+<tr>
+<td><code>p</code>, <code>q</code>, <code>lag</code></td>
+<td>int</td>
+<td>Lag orders used; <code>lag = max(p, q)</code>.</td>
+</tr>
+<tr>
+<td><code>n</code>, <code>n_eff</code></td>
+<td>int</td>
+<td>Original length and <code>n − max(p,q)</code>.</td>
+</tr>
+<tr>
+<td><code>direction</code></td>
+<td>str</td>
+<td>e.g. <code>"P_t -&gt; V_t"</code>.</td>
+</tr>
+<tr>
+<td><code>doubly_robust</code></td>
+<td>bool</td>
+<td>Which process was built.</td>
+</tr>
+<tr>
+<td><code>elapsed</code></td>
+<td>float</td>
+<td>Wall-clock seconds.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Array fields</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Shape</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>critical_values</code></td>
+<td>dict</td>
+<td><code>{alpha: quantile(KS*, 1−alpha)}</code>.</td>
+</tr>
+<tr>
+<td><code>boot_stats</code></td>
+<td><code>(B,)</code></td>
+<td>Bootstrap replicates <code>KS*_{n,b}</code>.</td>
+</tr>
+<tr>
+<td><code>S_hat</code></td>
+<td><code>(L,)</code> complex</td>
+<td><code>Ŝ_n(μ_ℓ, ν_ℓ)</code>.</td>
+</tr>
+<tr>
+<td><code>mu</code></td>
+<td><code>(L, q)</code></td>
+<td>Direction draws for the <code>Y</code> block.</td>
+</tr>
+<tr>
+<td><code>nu</code></td>
+<td><code>(L, p)</code></td>
+<td>Direction draws for the <code>X</code> block.</td>
+</tr>
+<tr>
+<td><code>residuals</code></td>
+<td><code>(n_eff,)</code></td>
+<td><code>Y_t − m̂(Y_{t−1})</code> on the standardised scale.</td>
+</tr>
+<tr>
+<td><code>m_hat</code></td>
+<td><code>(n_eff,)</code></td>
+<td>MLP fitted conditional means.</td>
+</tr>
+<tr>
+<td><code>phi_hat</code></td>
+<td><code>(n_eff, L)</code> complex</td>
+<td><code>φ̂(ν_ℓ \| Y_{t−1})</code>. All-zero when <code>doubly_robust=False</code>.</td>
+</tr>
+<tr>
+<td><code>influence</code></td>
+<td><code>(n_eff, L)</code> complex</td>
+<td>The summands <code>z_{t,ℓ}</code>. The bootstrap is <code>(ξ @ influence)/√n_eff</code>.</td>
+</tr>
+<tr>
+<td><code>settings</code></td>
+<td>dict</td>
+<td>Full hyper-parameter record, plus <code>mlp_history</code>, <code>mdn_history</code>, and <code>networks</code> when requested.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Properties and methods</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Member</th>
+<th>Returns</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.stars</code></td>
+<td>str</td>
+<td><code>***</code> &lt; 0.01, <code>**</code> &lt; 0.05, <code>*</code> &lt; 0.10, else <code>""</code>.</td>
+</tr>
+<tr>
+<td><code>.decision</code></td>
+<td>str</td>
+<td><code>"reject H0"</code> / <code>"do not reject H0"</code>.</td>
+</tr>
+<tr>
+<td><code>.summary()</code></td>
+<td>str</td>
+<td>Formatted block, ready to paste into an appendix.</td>
+</tr>
+<tr>
+<td><code>.print()</code></td>
+<td>None</td>
+<td>Prints <code>.summary()</code>.</td>
+</tr>
+<tr>
+<td><code>.to_dict()</code></td>
+<td>dict</td>
+<td>Flat record for a results table.</td>
+</tr>
+<tr>
+<td><code>.to_frame()</code></td>
+<td>DataFrame</td>
+<td>One-row version of <code>.to_dict()</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="drgc_lag_scan"><code>drgc_lag_scan</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">drgc_lag_scan</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lags</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">DRGCTResult</span><span class="p">])</span>
+</code></pre></div>
+
+<p>Runs <code>drgc_test</code> over a grid of lag orders — the structure of Table 6 of the
+paper. Lag <code>k</code> uses seed <code>seed + k</code>, so runs are independent yet reproducible.
+<code>**kwargs</code> are forwarded to <code>drgc_test</code>.</p>
+<p>The DataFrame has one row per lag with columns <code>direction, lag, p, q, n,
+n_eff, ks_stat, pvalue, reject, stars, doubly_robust, cv_10, cv_5, cv_1,
+elapsed</code>.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">scan</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">drgc_lag_scan</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lags</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">),</span> <span class="n">B</span><span class="o">=</span><span class="mi">999</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">scan</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;reject&quot;</span><span class="p">)[</span><span class="s2">&quot;lag&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>      <span class="c1"># which lags reject</span>
+<span class="n">results</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="o">.</span><span class="n">print</span><span class="p">()</span>                        <span class="c1"># full output for lag 7</span>
+</code></pre></div>
+
+<hr />
+<h3 id="drgc_both_directions"><code>drgc_both_directions</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">drgc_both_directions</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lag</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x_name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">y_name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="p">{</span><span class="s2">&quot;x_to_y&quot;</span><span class="p">:</span> <span class="n">DRGCTResult</span><span class="p">,</span> <span class="s2">&quot;y_to_x&quot;</span><span class="p">:</span> <span class="n">DRGCTResult</span><span class="p">}</span>
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code><span class="n">out</span> <span class="o">=</span> <span class="n">drgc_both_directions</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">x_name</span><span class="o">=</span><span class="s2">&quot;P_t&quot;</span><span class="p">,</span> <span class="n">y_name</span><span class="o">=</span><span class="s2">&quot;V_t&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;x_to_y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pvalue</span><span class="p">,</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;y_to_x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pvalue</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h3 id="drgc_stability"><code>drgc_stability</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">drgc_stability</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lag</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_draws</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span>
+</code></pre></div>
+
+<p>Re-runs the test over <code>n_draws</code> independent random-direction draws and network
+initialisations, holding the data fixed. <strong>Run this before reporting any
+borderline result.</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pvalues</code></td>
+<td><code>(n_draws,)</code></td>
+<td>One p-value per draw.</td>
+</tr>
+<tr>
+<td><code>ks_stats</code></td>
+<td><code>(n_draws,)</code></td>
+<td>One <code>KS_n</code> per draw.</td>
+</tr>
+<tr>
+<td><code>median</code>, <code>mean</code></td>
+<td>float</td>
+<td>Central tendency of the p-values.</td>
+</tr>
+<tr>
+<td><code>q05</code>, <code>q95</code></td>
+<td>float</td>
+<td>5th and 95th percentiles.</td>
+</tr>
+<tr>
+<td><code>share_reject</code></td>
+<td>float</td>
+<td>Fraction below <code>alpha</code>.</td>
+</tr>
+<tr>
+<td><code>merged_pvalue</code></td>
+<td>float</td>
+<td><code>min(1, 2 × median)</code> — valid under arbitrary dependence (Rüger; Vovk and Wang, 2020). Conservative.</td>
+</tr>
+<tr>
+<td><code>alpha</code>, <code>lag</code>, <code>n_draws</code>, <code>direction</code></td>
+<td>—</td>
+<td>Echo of the settings.</td>
+</tr>
+<tr>
+<td><code>results</code></td>
+<td>list</td>
+<td>The <code>DRGCTResult</code> objects.</td>
+</tr>
+</tbody>
+</table></div>
+<div class="codehilite"><pre><span></span><code><span class="n">stab</span> <span class="o">=</span> <span class="n">drgc_stability</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_draws</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">999</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stab</span><span class="p">[</span><span class="s2">&quot;median&quot;</span><span class="p">],</span> <span class="n">stab</span><span class="p">[</span><span class="s2">&quot;q05&quot;</span><span class="p">],</span> <span class="n">stab</span><span class="p">[</span><span class="s2">&quot;q95&quot;</span><span class="p">],</span> <span class="n">stab</span><span class="p">[</span><span class="s2">&quot;merged_pvalue&quot;</span><span class="p">])</span>
+</code></pre></div>
+
+<hr />
+<h2 id="2-networks-drgctnets">2. Networks — <code>drgct.nets</code></h2>
+<h3 id="mlpconfig"><code>MLPConfig</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">MLPConfig</span><span class="p">(</span>
+    <span class="n">width</span><span class="o">=</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">beta0</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">5e-3</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">patience</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">min_delta</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>width</code></td>
+<td><code>"paper"</code></td>
+<td><code>"paper"</code> → <code>H_n = 5·lag</code>; <code>"theory"</code> → <code>n^{q/(2(β₀+q))} log²n</code> (Lemma 1); or an int.</td>
+</tr>
+<tr>
+<td><code>depth</code></td>
+<td><code>"paper"</code></td>
+<td><code>"paper"</code> → 1; <code>"theory"</code> → <code>round(log n)</code>; or an int.</td>
+</tr>
+<tr>
+<td><code>beta0</code></td>
+<td><code>2</code></td>
+<td>Sobolev smoothness of <code>m(·)</code> (Assumption 4), used only by <code>"theory"</code>.</td>
+</tr>
+<tr>
+<td><code>loss</code></td>
+<td><code>"l2"</code></td>
+<td><code>"l2"</code> or <code>"smooth_l1"</code>; the paper permits either.</td>
+</tr>
+<tr>
+<td><code>epochs</code></td>
+<td><code>400</code></td>
+<td>Maximum Adam epochs.</td>
+</tr>
+<tr>
+<td><code>lr</code></td>
+<td><code>5e-3</code></td>
+<td>Learning rate.</td>
+</tr>
+<tr>
+<td><code>batch_size</code></td>
+<td><code>512</code></td>
+<td>Effectively full batch for <code>n ≤ 512</code>.</td>
+</tr>
+<tr>
+<td><code>weight_decay</code></td>
+<td><code>0.0</code></td>
+<td>L2 penalty.</td>
+</tr>
+<tr>
+<td><code>patience</code></td>
+<td><code>60</code></td>
+<td>Early-stopping patience on the running training loss.</td>
+</tr>
+<tr>
+<td><code>min_delta</code></td>
+<td><code>1e-6</code></td>
+<td>Minimum improvement counted as progress.</td>
+</tr>
+<tr>
+<td><code>dropout</code></td>
+<td><code>0.0</code></td>
+<td>Dropout after each hidden layer.</td>
+</tr>
+<tr>
+<td><code>device</code></td>
+<td><code>None</code></td>
+<td><code>"cpu"</code>, <code>"cuda"</code>, or <code>None</code> for automatic.</td>
+</tr>
+<tr>
+<td><code>verbose</code></td>
+<td><code>False</code></td>
+<td>Print the loss every 50 epochs.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="mdnconfig"><code>MDNConfig</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">MDNConfig</span><span class="p">(</span>
+    <span class="n">n_components</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">beta0</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">min_sigma</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">5e-3</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span> <span class="n">min_delta</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>Same fields, plus:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n_components</code></td>
+<td><code>10</code></td>
+<td><code>G</code>. Overridden by <code>drgc_test(G=...)</code>.</td>
+</tr>
+<tr>
+<td><code>min_sigma</code></td>
+<td><code>1e-2</code></td>
+<td>Floor on component standard deviations — the finite-sample counterpart of <code>σ_g(y) ≥ C⁻¹G^{−ω₂}</code> in Assumption 6(i). Raise to <code>5e-2</code> if training diverges.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="mlp"><code>MLP</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">MLP</span><span class="p">(</span><span class="n">d_in</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>          <span class="c1"># torch.nn.Module</span>
+<span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span> <span class="n">of</span> <span class="n">shape</span> <span class="p">(</span><span class="n">N</span><span class="p">,)</span>
+</code></pre></div>
+
+<h3 id="mixturedensitynetwork"><code>MixtureDensityNetwork</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">MixtureDensityNetwork</span><span class="p">(</span><span class="n">d_y</span><span class="p">,</span> <span class="n">d_x</span><span class="p">,</span> <span class="n">n_components</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">min_sigma</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">)</span>
+
+<span class="n">model</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>               <span class="o">-&gt;</span> <span class="p">(</span><span class="n">log_alpha</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">G</span><span class="p">),</span> <span class="n">mu</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">G</span><span class="p">,</span><span class="n">dx</span><span class="p">),</span> <span class="n">sigma</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">G</span><span class="p">,</span><span class="n">dx</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>   <span class="o">-&gt;</span> <span class="p">(</span><span class="n">N</span><span class="p">,)</span>     <span class="n">log</span> <span class="n">f̂</span><span class="p">(</span><span class="n">x</span> <span class="o">|</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>     <span class="o">-&gt;</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">dx</span><span class="p">)</span> <span class="n">draws</span> <span class="kn">from</span><span class="w"> </span><span class="nn">f̂</span><span class="p">(</span><span class="err">·</span> <span class="o">|</span> <span class="n">y</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Diagonal-covariance Gaussian mixture; for <code>d_x = 1</code> this is exactly the
+univariate mixture of Assumption 6(i).</p>
+<h3 id="fit_conditional_mean"><code>fit_conditional_mean</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">fit_conditional_mean</span><span class="p">(</span><span class="n">ylag</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MeanFit</span>
+</code></pre></div>
+
+<p><code>MeanFit</code> has <code>.fitted</code> (the in-sample <code>m̂(Y_{t−1})</code>), <code>.model</code>, <code>.history</code>,
+<code>.width</code>, <code>.depth</code>. Inputs are expected pre-standardised.</p>
+<h3 id="fit_conditional_density"><code>fit_conditional_density</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="n">fit_conditional_density</span><span class="p">(</span><span class="n">ylag</span><span class="p">,</span> <span class="n">xlag</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="n">DensityFit</span>
+</code></pre></div>
+
+<p><code>DensityFit</code> has <code>.samples</code> of shape <code>(N, M, p)</code>, <code>.model</code>, <code>.history</code>,
+<code>.width</code>, <code>.depth</code>, <code>.n_components</code>.</p>
+<h3 id="architecture-helpers">Architecture helpers</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">paper_width</span><span class="p">(</span><span class="n">lag</span><span class="p">,</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>      <span class="c1"># 5 * lag</span>
+<span class="n">theory_width</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">beta0</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>    <span class="o">-&gt;</span> <span class="nb">int</span>      <span class="c1"># n^{q/(2(beta0+q))} log^2 n</span>
+<span class="n">theory_depth</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>                <span class="o">-&gt;</span> <span class="nb">int</span>      <span class="c1"># round(log n)</span>
+</code></pre></div>
+
+<hr />
+<h2 id="3-benchmark-drgctnhkj">3. Benchmark — <code>drgct.nhkj</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="n">nhkj_test</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+    <span class="n">p</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">bandwidth_const</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bandwidth_exponent</span><span class="o">=-</span><span class="mf">0.15</span><span class="p">,</span>
+    <span class="n">kernel_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">x_name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">y_name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NHKJResult</span>
+</code></pre></div>
+
+<p>Smoothing-based nonparametric conditional-moment test of the Nishiyama,
+Hitomi, Kawasaki and Jeong (2011) class, in the Zheng (1996) / Fan–Li (1996)
+degenerate U-statistic form, configured as the DRGCT paper specifies for its
+benchmark. See the module docstring for the exact statement of what is and is
+not a transcription of the original article.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bandwidth_const</code></td>
+<td><code>None</code></td>
+<td><code>c</code> in <code>h = c·n^{−0.15}</code>. Default schedule: <code>2.5</code> at lag 1, <code>3.0</code> at lags 2–3, <code>3.5</code> at lags 4–5, <code>4.0</code> beyond. Section 4 shifts these up by 0.5 for the exponential-mean designs S2/P3.</td>
+</tr>
+<tr>
+<td><code>bandwidth</code></td>
+<td><code>None</code></td>
+<td>Set <code>h</code> directly, overriding <code>bandwidth_const</code>.</td>
+</tr>
+<tr>
+<td><code>bandwidth_exponent</code></td>
+<td><code>-0.15</code></td>
+<td>Exponent in <code>h = c·n^{exponent}</code>.</td>
+</tr>
+<tr>
+<td><code>kernel_order</code></td>
+<td><code>4</code></td>
+<td><code>4</code> → <code>K₄(u) = 0.5(3 − u²)φ(u)</code>; <code>2</code> → standard Gaussian.</td>
+</tr>
+<tr>
+<td><code>standardize</code></td>
+<td><code>True</code></td>
+<td>z-score each coordinate of <code>W_{t−1}</code> so one scalar bandwidth is sensible.</td>
+</tr>
+<tr>
+<td><code>chunk</code></td>
+<td><code>512</code></td>
+<td>Row-block size for the <code>O(n²d)</code> pairwise kernel computation. Lower it if memory is tight.</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>NHKJResult</code> fields: <code>stat</code> (asymptotically <code>N(0,1)</code>), <code>pvalue</code> (one-sided),
+<code>gamma</code>, <code>sigma</code>, <code>bandwidth</code>, <code>bandwidth_const</code>, <code>kernel_order</code>, <code>p</code>, <code>q</code>,
+<code>lag</code>, <code>n</code>, <code>n_eff</code>, <code>dim_w</code>, <code>alpha</code>, <code>reject</code>, <code>direction</code>, <code>elapsed</code>,
+<code>.stars</code>, <code>.summary()</code>, <code>.print()</code>, <code>.to_dict()</code>.</p>
+<p>Also exported: <code>gaussian_kernel(u)</code>, <code>gaussian_kernel4(u)</code>.</p>
+<hr />
+<h2 id="4-designs-drgctdgp">4. Designs — <code>drgct.dgp</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="n">simulate_dgp</span><span class="p">(</span><span class="n">dgp</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">lag</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">burn</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sigma2</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+             <span class="n">innovation_scale</span><span class="o">=</span><span class="s2">&quot;variance&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulatedSeries</span>
+</code></pre></div>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dgp</code></td>
+<td>—</td>
+<td><code>"S1"</code>, <code>"S2"</code> (null) or <code>"P1"</code>–<code>"P4"</code> (alternative).</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td>—</td>
+<td>Observations kept.</td>
+</tr>
+<tr>
+<td><code>lag</code></td>
+<td>—</td>
+<td><code>p = q = lag</code>.</td>
+</tr>
+<tr>
+<td><code>rng</code></td>
+<td><code>None</code></td>
+<td><code>Generator</code>, int seed, or <code>None</code>.</td>
+</tr>
+<tr>
+<td><code>burn</code></td>
+<td><code>500</code></td>
+<td>Initial observations discarded (<code>n₀</code> in the paper).</td>
+</tr>
+<tr>
+<td><code>sigma2</code></td>
+<td><code>0.5</code></td>
+<td>Innovation dispersion.</td>
+</tr>
+<tr>
+<td><code>innovation_scale</code></td>
+<td><code>"variance"</code></td>
+<td>The paper writes <code>N(0, 0.5)</code>; read as a variance by default, <code>"sd"</code> to read it as a standard deviation.</td>
+</tr>
+<tr>
+<td><code>params</code></td>
+<td><code>None</code></td>
+<td>Override the Table 2 coefficients: keys <code>a</code>, <code>b</code>, <code>c</code> (lists of length <code>lag</code>) and <code>a_exp</code>, <code>c_scalar</code>, <code>a0</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>SimulatedSeries</code> has <code>.x</code>, <code>.y</code>, <code>.dgp</code>, <code>.lag</code>, <code>.n</code>, <code>.causal</code>, <code>.params</code>,
+<code>.as_tuple()</code>.</p>
+<p>Other exports: <code>DGP_NAMES</code>, <code>SIZE_DGPS</code>, <code>POWER_DGPS</code>, <code>PARAMETERS</code>
+(the Table 2 dictionary), <code>DGP_EQUATIONS</code> (LaTeX), <code>dgp_parameters(lag)</code>,
+<code>dgp_table()</code> (Table 1), <code>parameter_table(lags)</code> (Table 2).</p>
+<hr />
+<h2 id="5-monte-carlo-drgctsimulate">5. Monte Carlo — <code>drgct.simulate</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="n">monte_carlo</span><span class="p">(</span>
+    <span class="n">dgps</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;S1&quot;</span><span class="p">,</span><span class="s2">&quot;S2&quot;</span><span class="p">,</span><span class="s2">&quot;P1&quot;</span><span class="p">,</span><span class="s2">&quot;P2&quot;</span><span class="p">,</span><span class="s2">&quot;P3&quot;</span><span class="p">,</span><span class="s2">&quot;P4&quot;</span><span class="p">),</span>
+    <span class="n">ns</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span>
+    <span class="n">lags</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+    <span class="n">reps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+    <span class="n">methods</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;drgc&quot;</span><span class="p">,</span> <span class="s2">&quot;nhkj&quot;</span><span class="p">),</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">20250915</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">drgc_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nhkj_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">burn</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">out_csv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flush_every</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span>
+</code></pre></div>
+
+<p>Returns a <strong>long</strong> frame: <code>dgp, n, lag, rep, causal, method, stat, pvalue,
+reject, elapsed</code>.</p>
+<ul>
+<li><code>methods</code> may include <code>"drgc_naive"</code> — the plug-in without the doubly robust
+  correction.</li>
+<li><code>n_jobs=-1</code> uses <code>cpu_count() − 1</code>. Guard the entry point with
+  <code>if __name__ == "__main__":</code>.</li>
+<li><code>out_csv</code> streams partial results every <code>flush_every</code> completed jobs so a
+  long run survives an interruption.</li>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="n">summarize</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span>
+<span class="c1"># dgp, n, lag, method, reps, rejection_rate, mean_pvalue, causal, mc_se</span>
+
+<span class="n">size_power_tables</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;drgc&quot;</span><span class="p">,</span><span class="s2">&quot;nhkj&quot;</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span><span class="err">…</span><span class="p">,</span> <span class="s2">&quot;power&quot;</span><span class="p">:</span><span class="err">…</span><span class="p">}</span>
+<span class="c1"># (lag, n) row MultiIndex x (DGP, method) column MultiIndex</span>
+
+<span class="n">run_replication</span><span class="p">(</span><span class="n">dgp</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">lag</span><span class="p">,</span> <span class="n">rep</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;drgc&quot;</span><span class="p">,</span><span class="s2">&quot;nhkj&quot;</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+                <span class="n">drgc_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nhkj_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">burn</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">torch_threads</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
+
+<span class="n">paper_bandwidth_const</span><span class="p">(</span><span class="n">dgp</span><span class="p">,</span> <span class="n">lag</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>     <span class="c1"># the Section 4 NHKJ schedule</span>
+<span class="n">PAPER_BANDWIDTH_CONST</span>                        <span class="c1"># the underlying dict</span>
+</code></pre></div>
+
+<hr />
+<h2 id="6-data-drgctdatasets">6. Data — <code>drgct.datasets</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="n">available_datasets</span><span class="p">()</span>  <span class="o">-&gt;</span> <span class="p">[</span><span class="s1">&#39;csi300&#39;</span><span class="p">,</span> <span class="s1">&#39;nikkei225&#39;</span><span class="p">,</span> <span class="s1">&#39;spx500&#39;</span><span class="p">]</span>
+<span class="n">data_dir</span><span class="p">()</span>            <span class="o">-&gt;</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span>
+
+<span class="n">load_index</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span>  <span class="c1"># Close, Volume</span>
+<span class="n">load_all</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">INDEX_KEYS</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>                  <span class="o">-&gt;</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">}</span>
+
+<span class="n">to_percentage_changes</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">price_col</span><span class="o">=</span><span class="s2">&quot;Close&quot;</span><span class="p">,</span> <span class="n">volume_col</span><span class="o">=</span><span class="s2">&quot;Volume&quot;</span><span class="p">,</span>
+                      <span class="n">volume_divisor</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">in_percent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span>  <span class="c1"># P, V</span>
+
+<span class="n">subsample</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>   <span class="o">-&gt;</span> <span class="n">DataFrame</span>     <span class="c1"># period is a PAPER_PERIODS key or (start, end)</span>
+<span class="n">describe</span><span class="p">(</span><span class="n">series_map</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">add_tests</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span>
+</code></pre></div>
+
+<p>Constants: <code>INDEX_KEYS</code>, <code>INDEX_LABELS</code>, <code>PAPER_PERIODS</code>
+(<code>{"2019-2022": ("2019-09-27","2022-09-26"), …}</code>), <code>PAPER_START</code>, <code>PAPER_END</code>.</p>
+<p><code>describe</code> returns: Obs., Mean, Median, Std. dev., Min., Max., Skewness,
+Kurtosis, Jarque–Bera + p, Ljung–Box(10) + p, Ljung–Box²(10) + p, ADF p,
+KPSS p.</p>
+<p>Rebuild or extend the bundled CSVs:</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>data/fetch_data.py
+python<span class="w"> </span>data/fetch_data.py<span class="w"> </span>--start<span class="w"> </span><span class="m">2005</span>-01-01<span class="w"> </span>--end<span class="w"> </span><span class="m">2024</span>-12-31
+python<span class="w"> </span>data/fetch_data.py<span class="w"> </span>--tickers<span class="w"> </span>^FTSE<span class="o">=</span>ftse100<span class="w"> </span>^GDAXI<span class="o">=</span>dax
+</code></pre></div>
+
+<p>Use your own file without touching the package:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">df</span> <span class="o">=</span> <span class="n">load_index</span><span class="p">(</span><span class="s2">&quot;anything&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/path/to/my.csv&quot;</span><span class="p">)</span>   <span class="c1"># needs Date, Close, Volume</span>
+</code></pre></div>
+
+<hr />
+<h2 id="7-applications-drgctapplications">7. Applications — <code>drgct.applications</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="n">price_volume_study</span><span class="p">(</span>
+    <span class="n">indices</span><span class="o">=</span><span class="n">INDEX_KEYS</span><span class="p">,</span>
+    <span class="n">periods</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">PAPER_PERIODS</span><span class="p">),</span>
+    <span class="n">lags</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span>
+    <span class="n">directions</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;P_t -&gt; V_t&quot;</span><span class="p">,</span> <span class="s2">&quot;V_t -&gt; P_t&quot;</span><span class="p">),</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">drgc_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">volume_divisor</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">20240926</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">out_csv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span>
+</code></pre></div>
+
+<p>Long frame: <code>index_key, index_label, period, start, end, direction, n_obs,
+lag, ks_stat, pvalue, reject, stars, cv_5, n_eff, elapsed</code>. Feeds
+<code>table_detection</code>, <code>table_lag_orders</code>, <code>table_pvalues</code> and
+<code>plot_pvalue_heatmap</code> directly.</p>
+<p><code>periods</code> may be an explicit mapping: <code>{"post-COVID": ("2020-04-01", "2024-09-26")}</code>.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">rolling_causality</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">dates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">both_directions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">x_name</span><span class="o">=</span><span class="s2">&quot;P_t&quot;</span><span class="p">,</span> <span class="n">y_name</span><span class="o">=</span><span class="s2">&quot;V_t&quot;</span><span class="p">,</span>
+    <span class="n">drgc_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span>
+<span class="c1"># direction, start_idx, end_idx, start_date, end_date, lag, ks_stat, pvalue, reject</span>
+
+<span class="n">lag_scan_frame</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lags</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">x_name</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">y_name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span>
+    <span class="n">both_directions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">drgc_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span>
+<span class="c1"># same tidy layout, with placeholder index_label / period</span>
+
+<span class="n">run_one_test</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lag</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">drgc_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">torch_threads</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span>
+</code></pre></div>
+
+<hr />
+<h2 id="8-tables-drgcttables">8. Tables — <code>drgct.tables</code></h2>
+<h3 id="export">Export</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">export_table</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">stem</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="s2">&quot;results/tables&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">caption</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+             <span class="n">notes</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%.3f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">latex_kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="s2">&quot;csv&quot;</span><span class="p">:</span><span class="err">…</span><span class="p">,</span> <span class="s2">&quot;md&quot;</span><span class="p">:</span><span class="err">…</span><span class="p">,</span> <span class="s2">&quot;tex&quot;</span><span class="p">:</span><span class="err">…</span><span class="p">}</span>
+
+<span class="n">to_latex_booktabs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">caption</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">notes</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%.3f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;htbp&quot;</span><span class="p">,</span>
+                  <span class="n">small</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">escape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+
+<p><code>export_table</code> writes <code>.tex</code> (booktabs), <code>.md</code> and <code>.csv</code> in one call.
+<code>align</code> defaults to <code>l</code> for object columns and <code>c</code> for numeric ones.
+<code>escape=True</code> translates <code>&amp;</code>, <code>%</code>, <code>_</code>, <code>#</code> and the tick/cross glyphs into
+<code>\checkmark</code> / <code>$\times$</code>.</p>
+<h3 id="builders">Builders</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Paper table</th>
+<th>Signature</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>table_dgp_definitions()</code></td>
+<td>Table 1</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>table_parameter_settings(lags=(1,2,3,4,5))</code></td>
+<td>Table 2</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>table_size(mc_df, *, dgps=("S1","S2"), methods=("drgc","nhkj"), alpha=0.05, digits=3)</code></td>
+<td>Table 3</td>
+<td>takes <code>monte_carlo</code> output</td>
+</tr>
+<tr>
+<td><code>table_power(mc_df, *, dgps=("P1","P2","P3","P4"), methods=…, alpha=0.05, digits=3)</code></td>
+<td>Table 4</td>
+<td>"</td>
+</tr>
+<tr>
+<td><code>table_detection(app_df, *, alpha=0.05, rule="any")</code></td>
+<td>Table 5</td>
+<td><code>rule</code> ∈ <code>{"any","majority","all"}</code></td>
+</tr>
+<tr>
+<td><code>table_lag_orders(app_df, *, alpha=0.05, lags=None)</code></td>
+<td>Table 6</td>
+<td>ticks/crosses</td>
+</tr>
+<tr>
+<td><code>table_pvalues(app_df, *, digits=3, lags=None)</code></td>
+<td>—</td>
+<td>Table 6 with numbers</td>
+</tr>
+<tr>
+<td><code>table_descriptives(series_map, *, digits=3)</code></td>
+<td>—</td>
+<td>moments + diagnostics</td>
+</tr>
+<tr>
+<td><code>table_hyperparameters(result_or_settings)</code></td>
+<td>—</td>
+<td>referee-proof settings record</td>
+</tr>
+</tbody>
+</table></div>
+<p>Also exported: <code>TICK</code>, <code>CROSS</code>, <code>fmt_rate(v, digits=3)</code>.</p>
+<p><strong>The tidy long format</strong> required by <code>table_detection</code>, <code>table_lag_orders</code>,
+<code>table_pvalues</code> and <code>plot_pvalue_heatmap</code>:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index_label</code></td>
+<td>str</td>
+<td><code>"SPX 500"</code></td>
+</tr>
+<tr>
+<td><code>period</code></td>
+<td>str</td>
+<td><code>"2021-2024"</code></td>
+</tr>
+<tr>
+<td><code>direction</code></td>
+<td>str</td>
+<td><code>"P_t -&gt; V_t"</code></td>
+</tr>
+<tr>
+<td><code>lag</code></td>
+<td>int</td>
+<td><code>1 … 10</code></td>
+</tr>
+<tr>
+<td><code>pvalue</code></td>
+<td>float</td>
+<td><code>0.0132</code></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="9-figures-drgctplots">9. Figures — <code>drgct.plots</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="n">use_journal_style</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">base_size</span><span class="o">=</span><span class="mf">9.5</span><span class="p">,</span> <span class="n">serif</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<span class="n">save_figure</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">stem</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="s2">&quot;results/figures&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">formats</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;pdf&quot;</span><span class="p">,</span><span class="s2">&quot;png&quot;</span><span class="p">),</span>
+            <span class="n">close</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span>
+<span class="n">PALETTE</span>        <span class="c1"># colour-blind-safe named colours</span>
+<span class="n">METHOD_STYLE</span>   <span class="c1"># consistent colour/marker/linestyle per estimator</span>
+</code></pre></div>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Input</th>
+<th>Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plot_size(summary_df, *, nominal=0.05, dgps=("S1","S2"), methods=("drgc","nhkj"), ylim=None, figsize=None, band=True)</code></td>
+<td><code>summarize()</code></td>
+<td>Size vs lag, with the nominal level and a ±1.96 MC-s.e. band</td>
+</tr>
+<tr>
+<td><code>plot_power(summary_df, *, dgps=("P1",…,"P4"), methods=…, figsize=None, ncol=2)</code></td>
+<td><code>summarize()</code></td>
+<td>Power vs lag, one panel per DGP, one line style per <code>n</code></td>
+</tr>
+<tr>
+<td><code>plot_size_power_grid(summary_df, **kwargs)</code></td>
+<td><code>summarize()</code></td>
+<td><code>(size_fig, power_fig)</code></td>
+</tr>
+<tr>
+<td><code>plot_pvalue_ecdf(mc_df, *, dgps=("S1","S2"), methods=…, n=None, lags=None, figsize=None)</code></td>
+<td><code>monte_carlo()</code></td>
+<td>Davidson–MacKinnon p-value plot; uniformity under <code>H0</code></td>
+</tr>
+<tr>
+<td><code>plot_bootstrap_distribution(result, *, bins=45, alphas=(0.10,0.05,0.01), figsize=(5.4,3.2))</code></td>
+<td><code>DRGCTResult</code></td>
+<td>Bootstrap null with <code>KS_n</code> and critical values</td>
+</tr>
+<tr>
+<td><code>plot_empirical_process(result, *, envelope=0.95, figsize=(6.6,3.0))</code></td>
+<td><code>DRGCTResult</code></td>
+<td><code>Re</code>/<code>Im</code> of <code>Ŝ_n</code> at each direction vs the bootstrap envelope</td>
+</tr>
+<tr>
+<td><code>plot_training_curves(result, *, figsize=(5.6,2.6))</code></td>
+<td><code>DRGCTResult</code></td>
+<td>MLP loss and MDN NLL</td>
+</tr>
+<tr>
+<td><code>plot_mdn_fit(result, *, coordinate=0, bins=40, figsize=(5.4,3.0))</code></td>
+<td><code>DRGCTResult</code> with <code>return_networks=True</code></td>
+<td>MDN draws vs the empirical marginal of <code>X_{t−1}</code></td>
+</tr>
+<tr>
+<td><code>plot_lag_profile(scan_df, *, alpha=0.05, label="", figsize=(5.6,3.0), show_stat=True)</code></td>
+<td><code>drgc_lag_scan()</code></td>
+<td>p-value (and <code>KS_n</code>) against lag</td>
+</tr>
+<tr>
+<td><code>plot_pvalue_heatmap(app_df, *, alpha=0.05, directions=None, index_order=…, figsize=None, annotate=True)</code></td>
+<td>tidy long</td>
+<td>Lag × period p-value map, one panel per direction</td>
+</tr>
+<tr>
+<td><code>plot_series_overview(raw_map, transformed_map=None, *, figsize=None)</code></td>
+<td><code>{label: DataFrame}</code></td>
+<td>Levels, volumes, and the transformed series</td>
+</tr>
+<tr>
+<td><code>plot_stability(stability, *, label="", bins=20, figsize=(5.8,3.0))</code></td>
+<td><code>drgc_stability()</code></td>
+<td>p-value distribution across direction draws</td>
+</tr>
+<tr>
+<td><code>plot_rolling_pvalue(roll_df, *, alpha=0.05, label="", figsize=(6.4,3.0))</code></td>
+<td><code>rolling_causality()</code></td>
+<td>p-value against window end date</td>
+</tr>
+</tbody>
+</table></div>
+<p>All return a <code>matplotlib.figure.Figure</code>, so you can post-process before
+saving. <code>save_figure</code> accepts any Matplotlib format (<code>"svg"</code>, <code>"eps"</code>, …).</p>
+<hr />
+<h2 id="10-utilities-drgctutils">10. Utilities — <code>drgct.utils</code></h2>
+<div class="codehilite"><pre><span></span><code><span class="n">set_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span>
+    <span class="c1"># seeds random, numpy, torch; returns the Generator to use</span>
+
+<span class="n">as_series</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
+    <span class="c1"># coerce to finite 1-D float64; raises on NaN/inf/short input</span>
+
+<span class="n">build_lag_design</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">allow_p_gt_q</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LagDesign</span>
+    <span class="c1"># .y (n_eff,)  .ylag (n_eff,q)  .xlag (n_eff,p)  .w (n_eff,p+q)</span>
+    <span class="c1"># .p .q .n .n_eff .dim_w .t_index</span>
+
+<span class="n">zscore</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+
+<span class="n">rademacher</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>                  <span class="o">-&gt;</span> <span class="n">ndarray</span>
+<span class="n">mammen</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>                      <span class="o">-&gt;</span> <span class="n">ndarray</span>
+<span class="n">draw_multipliers</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;rademacher&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span>
+
+<span class="n">check_stationarity</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;series&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span>
+    <span class="c1"># adf_stat, adf_pvalue, kpss_stat, kpss_pvalue, stationary, message</span>
+</code></pre></div>
+
+<p><code>check_stationarity</code> reports <code>stationary=True</code> only when ADF rejects the unit
+root <strong>and</strong> KPSS fails to reject stationarity.</p>
+<hr />
+<h2 id="11-command-line">11. Command line</h2>
+<div class="codehilite"><pre><span></span><code>drgct &lt;command&gt; [options]
+</code></pre></div>
+
+<h3 id="drgct-test"><code>drgct test</code></h3>
+<div class="codehilite"><pre><span></span><code>drgct<span class="w"> </span><span class="nb">test</span><span class="w"> </span>DATA.csv<span class="w"> </span>-x<span class="w"> </span>cause_col<span class="w"> </span>-y<span class="w"> </span>effect_col<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-x</code>, <code>-y</code></td>
+<td>required</td>
+<td>Column names.</td>
+</tr>
+<tr>
+<td><code>--lag</code></td>
+<td><code>1</code></td>
+<td>Single lag order.</td>
+</tr>
+<tr>
+<td><code>--lag-scan</code></td>
+<td>off</td>
+<td>Scan instead of a single test.</td>
+</tr>
+<tr>
+<td><code>--lag-min</code>, <code>--lag-max</code></td>
+<td><code>1</code>, <code>10</code></td>
+<td>Scan range.</td>
+</tr>
+<tr>
+<td><code>-G -L -M -B</code></td>
+<td><code>10 20 20 1000</code></td>
+<td>Test hyper-parameters.</td>
+</tr>
+<tr>
+<td><code>--alpha</code></td>
+<td><code>0.05</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--seed</code></td>
+<td><code>20250915</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--epochs</code></td>
+<td>—</td>
+<td>Override both networks' epochs.</td>
+</tr>
+<tr>
+<td><code>--outdir</code></td>
+<td><code>results</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>--save</code></td>
+<td>off</td>
+<td>Also write tables and figures.</td>
+</tr>
+</tbody>
+</table></div>
+<div class="codehilite"><pre><span></span><code>drgct<span class="w"> </span><span class="nb">test</span><span class="w"> </span>macro.csv<span class="w"> </span>-x<span class="w"> </span>m2_growth<span class="w"> </span>-y<span class="w"> </span>cpi_inflation<span class="w"> </span>--lag-scan<span class="w"> </span>--lag-max<span class="w"> </span><span class="m">18</span><span class="w"> </span>--save
+</code></pre></div>
+
+<h3 id="drgct-simulate"><code>drgct simulate</code></h3>
+<div class="codehilite"><pre><span></span><code>drgct<span class="w"> </span>simulate<span class="w"> </span><span class="o">[</span>--dgps<span class="w"> </span>S1<span class="w"> </span>S2<span class="w"> </span>P1<span class="w"> </span>P2<span class="w"> </span>P3<span class="w"> </span>P4<span class="o">]</span><span class="w"> </span><span class="o">[</span>--ns<span class="w"> </span><span class="m">500</span><span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="m">2000</span><span class="o">]</span>
+<span class="w">               </span><span class="o">[</span>--lag-min<span class="w"> </span><span class="m">1</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>--lag-max<span class="w"> </span><span class="m">5</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>--reps<span class="w"> </span><span class="m">1000</span><span class="o">]</span>
+<span class="w">               </span><span class="o">[</span>--methods<span class="w"> </span>drgc<span class="w"> </span>drgc_naive<span class="w"> </span>nhkj<span class="o">]</span><span class="w"> </span><span class="o">[</span>--jobs<span class="w"> </span>-1<span class="o">]</span><span class="w"> </span><span class="o">[</span>--outdir<span class="w"> </span>results<span class="o">]</span>
+</code></pre></div>
+
+<h3 id="drgct-app"><code>drgct app</code></h3>
+<div class="codehilite"><pre><span></span><code>drgct<span class="w"> </span>app<span class="w"> </span><span class="o">[</span>--indices<span class="w"> </span>spx500<span class="w"> </span>csi300<span class="w"> </span>nikkei225<span class="o">]</span>
+<span class="w">          </span><span class="o">[</span>--periods<span class="w"> </span><span class="m">2019</span>-2022<span class="w"> </span><span class="m">2020</span>-2023<span class="w"> </span><span class="m">2021</span>-2024<span class="o">]</span>
+<span class="w">          </span><span class="o">[</span>--lag-min<span class="w"> </span><span class="m">1</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>--lag-max<span class="w"> </span><span class="m">10</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>--jobs<span class="w"> </span>-1<span class="o">]</span><span class="w"> </span><span class="o">[</span>--outdir<span class="w"> </span>results<span class="o">]</span>
+</code></pre></div>
+
+<h3 id="drgct-info"><code>drgct info</code></h3>
+<div class="codehilite"><pre><span></span><code>drgct<span class="w"> </span>info<span class="w">            </span><span class="c1"># version, data directory, citation</span>
+drgct<span class="w"> </span>info<span class="w"> </span>--bibtex
+</code></pre></div>
+
+<h3 id="the-full-study-scripts">The full-study scripts</h3>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>scripts/run_simulation.py<span class="w">  </span>--reps<span class="w"> </span><span class="m">1000</span><span class="w"> </span>--ns<span class="w"> </span><span class="m">500</span><span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="m">2000</span><span class="w"> </span>-B<span class="w"> </span><span class="m">1000</span><span class="w"> </span>--jobs<span class="w"> </span><span class="m">10</span>
+python<span class="w"> </span>scripts/run_application.py<span class="w"> </span>--jobs<span class="w"> </span><span class="m">10</span><span class="w"> </span>--rolling<span class="w"> </span>--stability-draws<span class="w"> </span><span class="m">30</span>
+python<span class="w"> </span>scripts/run_simulation.py<span class="w">  </span>--quick<span class="w">        </span><span class="c1"># 2-minute plumbing check</span>
+python<span class="w"> </span>scripts/run_application.py<span class="w"> </span>--quick
+</code></pre></div>
+
+<hr />
+<h2 id="12-argument-cheat-sheet">12. Argument cheat sheet</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Want to…</th>
+<th>Do this</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Test one direction at one lag</td>
+<td><code>drgc_test(x, y, lag=k, seed=1)</code></td>
+</tr>
+<tr>
+<td>Test both directions</td>
+<td><code>drgc_both_directions(x, y, lag=k, seed=1)</code></td>
+</tr>
+<tr>
+<td>Scan lags 1–12</td>
+<td><code>drgc_lag_scan(x, y, lags=range(1, 13), seed=1)</code></td>
+</tr>
+<tr>
+<td>Different lags for cause and effect</td>
+<td><code>drgc_test(x, y, p=12, q=6)</code></td>
+</tr>
+<tr>
+<td>More power</td>
+<td>raise <code>L</code> (cheap), then <code>B</code>, then <code>epochs</code></td>
+</tr>
+<tr>
+<td>Fix a size distortion</td>
+<td>raise <code>G</code>, raise <code>epochs</code>, check <code>plot_mdn_fit</code></td>
+</tr>
+<tr>
+<td>Faster exploratory runs</td>
+<td><code>mlp=MLPConfig(epochs=150)</code>, <code>mdn=MDNConfig(epochs=200)</code>, <code>B=299</code></td>
+</tr>
+<tr>
+<td>Check the result is not a lucky draw</td>
+<td><code>drgc_stability(x, y, lag=k, n_draws=30)</code></td>
+</tr>
+<tr>
+<td>Reproduce the naive-plug-in failure</td>
+<td><code>drgc_test(..., doubly_robust=False)</code></td>
+</tr>
+<tr>
+<td>Use the theoretical architecture</td>
+<td><code>mlp=MLPConfig(width="theory", depth="theory")</code></td>
+</tr>
+<tr>
+<td>Bounded, skewed multipliers</td>
+<td><code>multiplier="mammen"</code></td>
+</tr>
+<tr>
+<td>Probe finer oscillations in <code>W</code></td>
+<td><code>w_lower=-3, w_upper=3</code></td>
+</tr>
+<tr>
+<td>Compare against a smoothing test</td>
+<td><code>nhkj_test(x, y, lag=k)</code></td>
+</tr>
+<tr>
+<td>Continuous-time view of causality</td>
+<td><code>rolling_causality(x, y, window=750, step=21)</code></td>
+</tr>
+<tr>
+<td>LaTeX for a manuscript</td>
+<td><code>export_table(df, "name", caption=..., label=...)</code></td>
+</tr>
+<tr>
+<td>Vector + raster figure in one call</td>
+<td><code>save_figure(fig, "name")</code></td>
+</tr>
+</tbody>
+</table></div>
+    <div class="pagefoot">
+      <div>
+        <strong>drgct 1.0.0</strong> · MIT licence · © 2026 Dr Merwan Roudane
+      </div>
+      <div>
+        <a href="https://github.com/merwanroudane/DRGCT">Source</a> ·
+        <a href="https://pypi.org/project/drgct/">PyPI</a> ·
+        <a href="https://arxiv.org/abs/2509.15798">Paper</a> ·
+        <a href="https://github.com/merwanroudane/DRGCT/issues">Report an issue</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<aside class="toc"><div class="group">On this page</div>
+  <a href="#contents">Contents</a>
+  <a href="#import-surface">Import surface</a>
+  <a href="#1-the-test-drgctcore">1. The test — drgct.core</a>
+  <a href="#drgc_test" class="h3">drgc_test</a>
+  <a href="#drgctresult" class="h3">DRGCTResult</a>
+  <a href="#drgc_lag_scan" class="h3">drgc_lag_scan</a>
+  <a href="#drgc_both_directions" class="h3">drgc_both_directions</a>
+  <a href="#drgc_stability" class="h3">drgc_stability</a>
+  <a href="#2-networks-drgctnets">2. Networks — drgct.nets</a>
+  <a href="#mlpconfig" class="h3">MLPConfig</a>
+  <a href="#mdnconfig" class="h3">MDNConfig</a>
+  <a href="#mlp" class="h3">MLP</a>
+  <a href="#mixturedensitynetwork" class="h3">MixtureDensityNetwork</a>
+  <a href="#fit_conditional_mean" class="h3">fit_conditional_mean</a>
+  <a href="#fit_conditional_density" class="h3">fit_conditional_density</a>
+  <a href="#architecture-helpers" class="h3">Architecture helpers</a>
+  <a href="#3-benchmark-drgctnhkj">3. Benchmark — drgct.nhkj</a>
+  <a href="#4-designs-drgctdgp">4. Designs — drgct.dgp</a>
+  <a href="#5-monte-carlo-drgctsimulate">5. Monte Carlo — drgct.simulate</a>
+  <a href="#6-data-drgctdatasets">6. Data — drgct.datasets</a>
+  <a href="#7-applications-drgctapplications">7. Applications — drgct.applications</a>
+  <a href="#8-tables-drgcttables">8. Tables — drgct.tables</a>
+  <a href="#export" class="h3">Export</a>
+  <a href="#builders" class="h3">Builders</a>
+  <a href="#9-figures-drgctplots">9. Figures — drgct.plots</a>
+  <a href="#10-utilities-drgctutils">10. Utilities — drgct.utils</a>
+  <a href="#11-command-line">11. Command line</a>
+  <a href="#drgct-test" class="h3">drgct test</a>
+  <a href="#drgct-simulate" class="h3">drgct simulate</a>
+  <a href="#drgct-app" class="h3">drgct app</a>
+  <a href="#drgct-info" class="h3">drgct info</a>
+  <a href="#the-full-study-scripts" class="h3">The full-study scripts</a>
+  <a href="#12-argument-cheat-sheet">12. Argument cheat sheet</a>
+</aside>
+
+</div>
+</body>
+</html>

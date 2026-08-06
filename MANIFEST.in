@@ -14,6 +14,8 @@ include data/fetch_data.py data/README.md
 # The rendered figures and tables live in the repository, not in the sdist:
 # they are ~4 MB of PDFs and PNGs and are fully regenerable from scripts/.
 prune results
+prune docs
+prune site
 prune results_example1
 prune results_example2
 prune results_example3

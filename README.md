@@ -5,6 +5,7 @@
 </p>
 
 <p align="center">
+  <a href="https://merwanroudane.github.io/DRGCT/"><img alt="Documentation" src="https://img.shields.io/badge/docs-website-1F4E79?logo=readthedocs&logoColor=white"></a>
   <a href="https://pypi.org/project/drgct/"><img alt="PyPI" src="https://img.shields.io/pypi/v/drgct?color=1F4E79&label=PyPI&logo=pypi&logoColor=white"></a>
   <a href="https://pypi.org/project/drgct/"><img alt="downloads" src="https://img.shields.io/pypi/dm/drgct?color=3E7B5E&label=downloads"></a>
   <a href="https://pypi.org/project/drgct/"><img alt="python" src="https://img.shields.io/pypi/pyversions/drgct?logo=python&logoColor=white"></a>
@@ -28,7 +29,11 @@ smoothing-based benchmark the paper compares against, and a set of
 journal-quality tables and figures that come out as LaTeX, Markdown, CSV, PDF
 and PNG in a single call.
 
-> ### 📘 New to the method? **Start with the [Applied Researcher's Guide](https://github.com/merwanroudane/DRGCT/blob/main/docs/GUIDE.md).**
+> ### 🌐 **Full documentation site: <https://merwanroudane.github.io/DRGCT/>**
+> Theory, the applied guide, the complete API reference, and both empirical
+> applications with every table and figure — in one place.
+>
+> ### 📘 New to the method? **Start with the [Applied Researcher's Guide](https://merwanroudane.github.io/DRGCT/guide.html).**
 > It walks you from a raw CSV to a finished results section, with complete
 > runnable code at every step, and a write-up template at the end.
 
@@ -302,9 +307,39 @@ more replications and adds the naive plug-in and the smoothing benchmark; see
 
 ---
 
-## Real economic data
+## Two real economic applications
 
-Three daily index series covering the paper's exact window,
+### 1. US macroeconomics, 1959–2025 — [full write-up →](https://merwanroudane.github.io/DRGCT/macro.html)
+
+Eight monthly FRED series, six relations the macro literature argues about,
+both directions, lag orders from 1 to 18 months, plus a Great Inflation versus
+Great Moderation split. **108 doubly robust tests.**
+
+| Relation | Finding |
+|---|---|
+| WTI oil price → CPI inflation | `p < 0.001` at 1, 3 and 6 months. All 30 direction draws reject — the most robust result in the repository. |
+| Industrial production → Unemployment | `p < 0.001`, 0.005, 0.037 at 1, 3, 6 months. Okun's law as a dynamic statement. |
+| M2 money growth → CPI inflation | `p` = 0.022 at 1 month, 0.013 at 6. |
+| Fed funds rate → Industrial production | Nothing beyond 1 month pooled — but `p` = 0.018 at 3 months in 1959–1983. Pooling two monetary regimes washes the transmission out. |
+
+```bash
+python data/fetch_macro.py            # refresh the FRED series
+python scripts/run_macro_application.py --jobs -1
+```
+
+```python
+from drgct.datasets import load_macro
+from drgct import drgc_lag_scan
+
+m = load_macro()                       # 801 months, 8 series, offline
+scan, _ = drgc_lag_scan(m["WTI oil price"].to_numpy(),
+                        m["CPI inflation"].to_numpy(),
+                        lags=[1, 3, 6, 12], L=60, B=999, seed=1)
+```
+
+### 2. Price and volume in three markets — [full write-up →](https://merwanroudane.github.io/DRGCT/finance.html)
+
+The paper's own application. Three daily index series covering the paper's exact window,
 **27 September 2019 – 26 September 2024**, ship inside the package so every
 example runs offline:
 
@@ -493,6 +528,7 @@ drgct app --indices spx500 --lag-max 10 --jobs 10
 
 | Document | For |
 |---|---|
+| **[The website](https://merwanroudane.github.io/DRGCT/)** | **Everything below, rendered, with both applications and all their tables and figures** |
 | **[docs/GUIDE.md](https://github.com/merwanroudane/DRGCT/blob/main/docs/GUIDE.md)** | **The applied researcher's guide** — raw data to finished results section, with a reporting checklist and a write-up template |
 | [docs/SYNTAX.md](https://github.com/merwanroudane/DRGCT/blob/main/docs/SYNTAX.md) | Complete API reference: every function, argument and return field |
 | [docs/THEORY.md](https://github.com/merwanroudane/DRGCT/blob/main/docs/THEORY.md) | Equation-by-equation map from the paper to the code, assumptions, deliberate implementation choices |

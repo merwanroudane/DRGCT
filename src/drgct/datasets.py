@@ -40,6 +40,10 @@ import numpy as np
 
 __all__ = [
     "INDEX_KEYS",
+    "MACRO_SERIES",
+    "MACRO_TRANSFORMS",
+    "MACRO_PERIODS",
+    "load_macro",
     "INDEX_LABELS",
     "PAPER_PERIODS",
     "PAPER_START",
@@ -59,6 +63,36 @@ INDEX_LABELS = {
     "spx500": "SPX 500",
     "csi300": "CSI 300",
     "nikkei225": "NI 225",
+}
+
+#: FRED series in the bundled US macroeconomic dataset, with the label used in
+#: tables and figures and the transformation that renders them stationary.
+MACRO_SERIES = {
+    "INDPRO":   ("Industrial production", "logdiff"),
+    "CPIAUCSL": ("CPI inflation",         "logdiff"),
+    "PCEPI":    ("PCE inflation",         "logdiff"),
+    "FEDFUNDS": ("Fed funds rate",        "diff"),
+    "M2SL":     ("M2 money growth",       "logdiff"),
+    "UNRATE":   ("Unemployment rate",     "diff"),
+    "PAYEMS":   ("Nonfarm payrolls",      "logdiff"),
+    "WTISPLC":  ("WTI oil price",         "logdiff"),
+}
+
+#: How each transformation is described in a table note.
+MACRO_TRANSFORMS = {
+    "logdiff": r"$100\,\Delta\log$ (monthly growth, %)",
+    "diff": r"$\Delta$ (monthly change, percentage points)",
+    "level": "level",
+}
+
+#: Sub-samples used in the macro application.  The break is the conventional
+#: Great Moderation date: Volcker's disinflation is complete, and the
+#: volatility of US output growth drops sharply (McConnell and Perez-Quiros,
+#: 2000; Stock and Watson, 2002).
+MACRO_PERIODS = {
+    "Full sample": ("1959-02-01", "2025-12-01"),
+    "Great Inflation 1959-1983": ("1959-02-01", "1983-12-01"),
+    "Great Moderation 1984-2025": ("1984-01-01", "2025-12-01"),
 }
 
 PAPER_START = "2019-09-27"
@@ -169,6 +203,90 @@ def load_index(
 def load_all(keys: Iterable[str] = INDEX_KEYS, **kwargs) -> dict:
     """``{key: DataFrame}`` for several indices at once."""
     return {k: load_index(k, **kwargs) for k in keys}
+
+
+def load_macro(
+    series=None,
+    *,
+    start: str | None = None,
+    end: str | None = None,
+    transform: bool = True,
+    path: str | pathlib.Path | None = None,
+):
+    r"""Load the bundled monthly US macroeconomic dataset from FRED.
+
+    Eight series, 1959-01 to 2025-12, listed in :data:`MACRO_SERIES`.  See
+    ``src/drgct/data/SOURCES_MACRO.md`` for provenance and
+    ``data/fetch_macro.py`` to refresh or extend them.
+
+    Parameters
+    ----------
+    series : sequence of str, optional
+        FRED ids to keep.  Defaults to all of :data:`MACRO_SERIES`.
+    start, end : str, optional
+        ISO dates, both inclusive.
+    transform : bool, default True
+        Apply the stationarity-inducing transformation attached to each series
+        in :data:`MACRO_SERIES`: ``100 * dlog`` for indices, prices, money and
+        employment; a first difference for the two series already measured in
+        percent (the federal funds rate and the unemployment rate).  Columns
+        are renamed to the human-readable labels and the first row is dropped.
+    path : path-like, optional
+        Load an arbitrary CSV instead; it must have a date column and the
+        requested FRED ids as columns.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Monthly, date-indexed.  With ``transform=True`` every column is
+        stationary by construction and non-finite rows are dropped.
+
+    Examples
+    --------
+    >>> from drgct.datasets import load_macro
+    >>> m = load_macro(["FEDFUNDS", "INDPRO"])
+    >>> list(m.columns)
+    ['Fed funds rate', 'Industrial production']
+    >>> len(m) > 700
+    True
+    """
+    import pandas as pd
+
+    f = pathlib.Path(path) if path is not None else data_dir() / "us_macro.csv"
+    if not f.exists():
+        raise FileNotFoundError(
+            f"{f} not found.  Run `python data/fetch_macro.py` to build it."
+        )
+    df = pd.read_csv(f, index_col=0, parse_dates=True).sort_index()
+    df.index.name = "Date"
+
+    keys = list(series) if series is not None else [k for k in MACRO_SERIES if k in df.columns]
+    missing = [k for k in keys if k not in df.columns]
+    if missing:
+        raise ValueError(f"{missing} not in {f}; available: {list(df.columns)}.")
+    df = df[keys].astype(float)
+
+    if transform:
+        out = {}
+        for k in keys:
+            label, how = MACRO_SERIES.get(k, (k, "logdiff"))
+            col = df[k]
+            if how == "logdiff":
+                out[label] = 100.0 * np.log(col).diff()
+            elif how == "diff":
+                out[label] = col.diff()
+            else:
+                out[label] = col
+        df = pd.DataFrame(out, index=df.index)
+        df = df.replace([np.inf, -np.inf], np.nan).dropna()
+
+    if start is not None:
+        df = df[df.index >= pd.Timestamp(start)]
+    if end is not None:
+        df = df[df.index <= pd.Timestamp(end)]
+    df.attrs["name"] = "us_macro"
+    df.attrs["transformed"] = transform
+    return df
 
 
 # --------------------------------------------------------------------------- #

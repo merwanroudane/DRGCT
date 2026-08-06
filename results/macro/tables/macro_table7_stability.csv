@@ -1,0 +1,2 @@
+Relation,Lag,Median p,5th pct,95th pct,Share rejecting,Merged p
+WTI oil price -> CPI inflation,1,0.0,0.0,0.001,1.0,0.0

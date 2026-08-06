@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview — drgct</title>
+<meta name="description" content="A complete, documented Python implementation of the deep-learning based doubly robust test for Granger causality — with real economic applications, journal-quality output, and ever">
+<meta name="author" content="Dr Merwan Roudane">
+<link rel="canonical" href="https://merwanroudane.github.io/DRGCT/index.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Overview — drgct">
+<meta property="og:description" content="A complete, documented Python implementation of the deep-learning based doubly robust test for Granger causality — with real economic applications, journal-quality output, and ever">
+<meta property="og:url" content="https://merwanroudane.github.io/DRGCT/index.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231F4E79'/><text x='50' y='70' font-size='58' font-family='Georgia,serif' fill='white' text-anchor='middle'>D</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="mark">drgct</span>
+    <span class="tagline">Deep-learning based doubly robust test<br>for Granger causality</span>
+  </a>
+  <button class="navtoggle" onclick="document.getElementById('sidebar').classList.toggle('open')">Menu</button>
+  <nav>
+    <div class="group">Start</div>
+    <a href="index.html" class="active">Overview</a>
+    <a href="guide.html">Applied guide</a>
+    <div class="group">Method</div>
+    <a href="theory.html">Theory</a>
+    <a href="api.html">API reference</a>
+    <a href="faq.html">FAQ</a>
+    <div class="group">Results</div>
+    <a href="macro.html">US macro application</a>
+    <a href="finance.html">Price–volume application</a>
+    <a href="simulation.html">Simulation evidence</a>
+  </nav>
+  <div class="ext">
+    <a href="https://github.com/merwanroudane/DRGCT">GitHub repository</a>
+    <a href="https://pypi.org/project/drgct/">PyPI package</a>
+    <a href="https://arxiv.org/abs/2509.15798">The paper (arXiv)</a>
+  </div>
+  <div class="byline">
+    Built and maintained by<br>
+    <strong>Dr Merwan Roudane</strong><br>
+    <a href="mailto:merwanroudane920@gmail.com">merwanroudane920@gmail.com</a><br>
+    <a href="https://github.com/merwanroudane">github.com/merwanroudane</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="content md-body">
+<div class="hero">
+<h1 id="drgct">drgct</h1>
+<p class="sub">A complete, documented Python implementation of the <b>deep-learning based doubly robust test for Granger causality</b> — with real economic applications, journal-quality output, and every divergence from the source paper written down rather than hidden.</p>
+<div class="badges">
+<a href="https://pypi.org/project/drgct/"><img alt="PyPI" src="https://img.shields.io/pypi/v/drgct?color=1F4E79&label=PyPI&logo=pypi&logoColor=white"></a>
+<a href="https://pypi.org/project/drgct/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/drgct?logo=python&logoColor=white"></a>
+<a href="https://github.com/merwanroudane/DRGCT"><img alt="GitHub" src="https://img.shields.io/badge/source-GitHub-1E2A32?logo=github"></a>
+<a href="https://arxiv.org/abs/2509.15798"><img alt="arXiv" src="https://img.shields.io/badge/paper-arXiv%3A2509.15798-B4462F"></a>
+<a href="https://github.com/merwanroudane/DRGCT/blob/main/LICENSE"><img alt="MIT" src="https://img.shields.io/badge/licence-MIT-3E7B5E"></a>
+</div>
+</div>
+<div class="codehilite"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>drgct
+</code></pre></div>
+
+<p>The method is due to <strong>Hui, Y., Liu, C. and Song, X. (2025)</strong>, <em>Deep learning
+based doubly robust test for Granger causality</em>,
+<a href="https://arxiv.org/abs/2509.15798">arXiv:2509.15798v2</a>. This site documents an
+independent open-source implementation, built and maintained by
+<strong>Dr Merwan Roudane</strong>.</p>
+<div class="stat-row">
+  <div class="stat"><div class="v">10+</div><div class="l">lag orders you can actually test, where kernel methods stop at two or three</div></div>
+  <div class="stat"><div class="v">0.05</div><div class="l">empirical size at the 5% nominal level, at every lag we checked</div></div>
+  <div class="stat"><div class="v">~2 s</div><div class="l">per test at <i>n</i> = 500 on a laptop CPU — no GPU needed</div></div>
+  <div class="stat"><div class="v">260+</div><div class="l">tests run on real economic data for the two applications on this site</div></div>
+</div>
+
+<h2 id="where-to-start">Where to start</h2>
+<div class="grid two">
+  <a class="card" href="guide.html">
+    <h3>Applied guide →</h3>
+    <p>From a raw CSV to a finished results section: design decisions, complete runnable code at every step, a reporting checklist and a write-up template.</p>
+  </a>
+  <a class="card" href="macro.html">
+    <h3>US macro application →</h3>
+    <p>Sixty years of monthly FRED data. Oil shocks, monetary transmission, the quantity theory and Okun's law, tested at lags of one to eighteen months.</p>
+  </a>
+  <a class="card" href="theory.html">
+    <h3>Theory →</h3>
+    <p>Every equation of the paper mapped to the exact line of code, the assumptions spelled out, and each open choice documented.</p>
+  </a>
+  <a class="card" href="api.html">
+    <h3>API reference →</h3>
+    <p>Every public function, every argument, every return field, with worked examples.</p>
+  </a>
+</div>
+
+<h2 id="the-problem-this-solves">The problem this solves</h2>
+<p>Granger causality testing has a standing dilemma.</p>
+<p>The linear VAR <em>F</em>-test is cheap, correctly sized and completely blind to
+nonlinearity. Kernel-smoothing nonparametric tests see nonlinearity, but past
+two or three lags they collapse under the curse of dimensionality: they lose
+size control, lose power, and become hostage to a bandwidth choice.</p>
+<p>Yet economic mechanisms routinely operate with <em>long and variable lags</em> —
+monetary policy on output, energy prices on the consumer basket, credit
+conditions on investment. Testing them at lag 1 answers a question nobody
+asked.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: center;">Linear VAR <em>F</em></th>
+<th style="text-align: center;">Kernel / smoothing</th>
+<th style="text-align: center;"><strong>DRGCT</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Detects nonlinear causality</td>
+<td style="text-align: center;">✗</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+</tr>
+<tr>
+<td>Usable at lag 5–18</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✗</td>
+<td style="text-align: center;">✓</td>
+</tr>
+<tr>
+<td>Bandwidth to tune</td>
+<td style="text-align: center;">–</td>
+<td style="text-align: center;">yes, and it matters</td>
+<td style="text-align: center;">none</td>
+</tr>
+<tr>
+<td>Size control at large lag</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">poor</td>
+<td style="text-align: center;">✓</td>
+</tr>
+<tr>
+<td>Local power rate</td>
+<td style="text-align: center;"><code>n^{-1/2}</code></td>
+<td style="text-align: center;">slower</td>
+<td style="text-align: center;"><code>n^{-1/2}</code></td>
+</tr>
+<tr>
+<td>Cost per test</td>
+<td style="text-align: center;">ms</td>
+<td style="text-align: center;">s</td>
+<td style="text-align: center;">s to tens of s</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="how-it-works-in-one-screen">How it works, in one screen</h2>
+<p>Let <code>W(t-1)</code> collect <code>p</code> lags of <code>X</code> and <code>q</code> lags of <code>Y</code>, and let
+<code>m(Y(t-1)) = E[Y(t) | Y(t-1), …, Y(t-q)]</code> be the best forecast of <code>Y</code> from its
+own past alone. The null is that adding <code>X</code>'s past changes nothing:</p>
+<div class="eq"><span class="tag">(2)</span>
+<code>H₀ :  E[ Y(t) − m(Y(t−1)) | W(t−1) ] = 0   almost surely</code>
+</div>
+
+<p>Weighting by the generically comprehensively revealing family
+<code>exp(i·w′W)</code> of Stinchcombe and White (1998) turns that conditional
+restriction into an unconditional one, and Proposition 1 of the paper shows it
+is equivalent to the <strong>doubly robust</strong> form:</p>
+<div class="eq"><span class="tag">(6)</span>
+<code>H₀ :  E[ (Y(t) − m(Y(t−1))) · e^{iμ′Y(t−1)} · ( e^{iν′X(t−1)} − φ(ν | Y(t−1)) ) ] = 0</code>
+</div>
+
+<p>with <code>φ(ν | Y(t−1)) = E[e^{iν′X(t−1)} | Y(t−1)]</code>. Estimate <code>m</code> with a
+multilayer perceptron and <code>φ</code> with a mixture density network, evaluate the
+resulting empirical process at <code>L</code> random directions, take the
+Kolmogorov–Smirnov functional of its real and imaginary parts, and get
+critical values from a multiplier bootstrap.</p>
+<div class="note"><strong>Why the correction term is the whole point</strong>
+<p>Drop <code>φ̂</code> and the bias is first order in the neural-network error,
+so the process has no valid limiting distribution. Keep it and the bias depends
+on the <b>product</b> of the two estimation errors. Two estimators that each
+converge slower than <code>n^{−1/2}</code> still multiply into something fast
+enough — which is exactly what lets deep networks live inside a classical
+testing framework.</p></div>
+
+<p>Because only the bootstrap multipliers are redrawn, the two networks are
+trained <strong>once per test</strong>: <code>B = 999</code> costs milliseconds against seconds for the
+networks. Never economise on <code>B</code>.</p>
+<p>Full derivation and the line-by-line source map: <a href="theory.html">Theory</a>.</p>
+<h2 id="sixty-seconds">Sixty seconds</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">drgct</span><span class="w"> </span><span class="kn">import</span> <span class="n">drgc_test</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">600</span>
+
+<span class="c1"># X is an AR(1).  Y depends on X only through sin(.), so the linear</span>
+<span class="c1"># projection of Y on lagged X is essentially zero: a VAR F-test sees nothing.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">);</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="n">x</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">e1</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span>  <span class="mf">0.5</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">e2</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+
+<span class="n">drgc_test</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">print</span><span class="p">()</span>
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code>  H0 : X does not Granger-cause Y in mean
+  Lag orders          : p = 1 (cause), q = 1 (effect)
+  Sample              : n = 600,  effective n - q = 599
+  KS_n statistic      : 8.271043
+  Bootstrap p-value   : 0.0000 ***
+  Critical values     : 1%: 1.7654  5%: 1.5361  10%: 1.4224
+  Decision at 5%      : REJECT H0
+</code></pre></div>
+
+<p>Scan every lag order in both directions, and get a tidy table back:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">drgct</span><span class="w"> </span><span class="kn">import</span> <span class="n">drgc_lag_scan</span>
+<span class="n">scan</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">drgc_lag_scan</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lags</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="does-it-work-yes-and-here-is-the-evidence">Does it work? Yes — and here is the evidence</h2>
+<p>The single most informative size diagnostic is the p-value plot: under the
+null, a correctly sized test produces p-values that are uniform on <code>[0, 1]</code>, so
+their empirical CDF should lie on the 45-degree line.</p>
+<figure><img loading="lazy" src="assets/figures/fig2_pvalue_ecdf.png" alt="The doubly robust test is correctly sized"><figcaption><strong>The doubly robust test is correctly sized.</strong> Empirical CDF of the bootstrap p-value across 200 replications of the paper's two null designs, <em>n</em> = 500. The DRGCT (blue) tracks the diagonal at every lag order. The naive deep plug-in (gold) and the smoothing benchmark (red) do not. Full detail on the <a href="simulation.html">simulation page</a>.</figcaption></figure>
+
+<h2 id="two-real-applications">Two real applications</h2>
+<div class="grid two">
+  <a class="card" href="macro.html">
+    <h3>US macroeconomics, 1959–2025 →</h3>
+    <p>Eight monthly FRED series, six relations, both directions, lags of 1 to 18 months, plus a Great Inflation versus Great Moderation split. Oil prices Granger-cause inflation at <i>p</i> &lt; 0.001 out to six months; industrial production drives unemployment; monetary transmission is weak in the pooled sample and concentrated in the pre-1984 era.</p>
+  </a>
+  <a class="card" href="finance.html">
+    <h3>Price–volume in three markets →</h3>
+    <p>The paper's own application: 180 tests across the S&amp;P 500, CSI 300 and Nikkei 225, three overlapping sub-samples and ten lag orders — plus a rolling-window extension the paper points to but does not carry out.</p>
+  </a>
+</div>
+
+<h2 id="the-one-caveat-you-must-not-skip">The one caveat you must not skip</h2>
+<p>Step 2(d) of the algorithm draws the <code>L</code> evaluation directions <strong>at random</strong>.
+Every draw is a valid test, but with <code>L = 20</code> in a twenty-dimensional
+conditioning space, the draws differ enough that the p-value carries simulation
+noise on top of sampling noise.</p>
+<p>This is not hypothetical. In the price–volume application, one seed put a test
+at <code>p = 0.008</code>; across thirty independent draws the median was <strong>0.52</strong> and only
+<strong>7%</strong> of draws rejected.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">drgct</span><span class="w"> </span><span class="kn">import</span> <span class="n">drgc_stability</span>
+<span class="n">stab</span> <span class="o">=</span> <span class="n">drgc_stability</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_draws</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">stab</span><span class="p">[</span><span class="s2">&quot;median&quot;</span><span class="p">],</span> <span class="n">stab</span><span class="p">[</span><span class="s2">&quot;q05&quot;</span><span class="p">],</span> <span class="n">stab</span><span class="p">[</span><span class="s2">&quot;q95&quot;</span><span class="p">],</span> <span class="n">stab</span><span class="p">[</span><span class="s2">&quot;merged_pvalue&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+<p>Three remedies, in order: <strong>raise <code>L</code></strong> (nearly free, and it also raises
+power); <strong>report the distribution</strong>, not one draw; <strong>quote <code>merged_pvalue</code></strong>,
+which is <code>min(1, 2 × median)</code> and is a valid — conservative — p-value under
+arbitrary dependence.</p>
+<p><code>drgc_stability</code> is an addition to the paper, not part of it. It exists because
+running the method at scale on real data made the issue impossible to ignore.</p>
+<h2 id="what-is-in-the-package">What is in the package</h2>
+<div class="grid three">
+  <div class="card"><h3>The test</h3><p><code>drgc_test</code>, <code>drgc_lag_scan</code>, <code>drgc_both_directions</code>, <code>drgc_stability</code> — Algorithm 1 in full.</p></div>
+  <div class="card"><h3>Networks</h3><p><code>MLPConfig</code>, <code>MDNConfig</code> — the paper's architecture, or the theoretical rates of Lemmas 1–2.</p></div>
+  <div class="card"><h3>Benchmark</h3><p><code>nhkj_test</code> — a smoothing-based nonparametric comparator.</p></div>
+  <div class="card"><h3>Simulation</h3><p><code>simulate_dgp</code>, <code>monte_carlo</code> — the six designs of Table 1 and a parallel replication driver.</p></div>
+  <div class="card"><h3>Data</h3><p><code>load_index</code>, <code>load_macro</code> — bundled daily market and monthly FRED series, offline.</p></div>
+  <div class="card"><h3>Output</h3><p><code>drgct.tables</code>, <code>drgct.plots</code> — booktabs LaTeX, Markdown, CSV; thirteen figures as vector PDF and PNG.</p></div>
+</div>
+
+<p>There is also a command line:</p>
+<div class="codehilite"><pre><span></span><code>drgct<span class="w"> </span>info
+drgct<span class="w"> </span><span class="nb">test</span><span class="w"> </span>data.csv<span class="w"> </span>-x<span class="w"> </span>credit<span class="w"> </span>-y<span class="w"> </span>gdp<span class="w"> </span>--lag-scan<span class="w"> </span>--lag-max<span class="w"> </span><span class="m">12</span><span class="w"> </span>--save
+drgct<span class="w"> </span>simulate<span class="w"> </span>--dgps<span class="w"> </span>S1<span class="w"> </span>P2<span class="w"> </span>--reps<span class="w"> </span><span class="m">200</span><span class="w"> </span>--jobs<span class="w"> </span><span class="m">10</span>
+drgct<span class="w"> </span>app<span class="w"> </span>--indices<span class="w"> </span>spx500<span class="w"> </span>--lag-max<span class="w"> </span><span class="m">10</span><span class="w"> </span>--jobs<span class="w"> </span><span class="m">10</span>
+</code></pre></div>
+
+<h2 id="honest-limitations">Honest limitations</h2>
+<div class="warn"><strong>Read before you cite results from this implementation</strong>
+<p>Four things diverge from the source paper, all documented in full on the
+<a href="simulation.html">simulation page</a>: the naive plug-in fails
+<i>downwards</i> here rather than upwards; the smoothing benchmark does not
+reproduce the paper's NHKJ finite-sample behaviour, so its power column is not
+a fair comparison; power in design P4 is below the paper's at high lag; and the
+bundled market data are not the paper's (unnamed) vendor's.</p></div>
+
+<p>The test is also bivariate and targets the conditional <strong>mean</strong> only. It says
+nothing about causality in variance or in quantiles, and — as always with
+Granger causality — nothing about structural causality in the sense of an
+intervention.</p>
+<h2 id="citation">Citation</h2>
+<p>Cite the paper. Cite the software too, if it saved you time.</p>
+<div class="codehilite"><pre><span></span><code><span class="nc">@article</span><span class="p">{</span><span class="nl">HuiLiuSong2025DRGCT</span><span class="p">,</span>
+<span class="w">  </span><span class="na">title</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{Deep learning based doubly robust test for Granger causality}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">author</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{Hui, Yongchang and Liu, Chijin and Song, Xiaojun}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{arXiv preprint arXiv:2509.15798}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">year</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{2025}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">url</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{https://arxiv.org/abs/2509.15798}</span>
+<span class="p">}</span>
+
+<span class="nc">@software</span><span class="p">{</span><span class="nl">Roudane2026drgct</span><span class="p">,</span>
+<span class="w">  </span><span class="na">title</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{drgct: Deep-learning based doubly robust Granger causality testing in Python}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">author</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{Roudane, Merwan}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">version</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{1.0.0}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">year</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{2026}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">url</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{https://github.com/merwanroudane/DRGCT}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><code>drgct.cite("bibtex")</code> prints both.</p>
+<hr />
+<p><strong>Dr Merwan Roudane</strong> ·
+<a href="mailto:merwanroudane920@gmail.com">merwanroudane920@gmail.com</a> ·
+<a href="https://github.com/merwanroudane">github.com/merwanroudane</a> ·
+<a href="https://pypi.org/project/drgct/">PyPI</a> ·
+<a href="https://github.com/merwanroudane/DRGCT">Source</a></p>
+<p>The method is the intellectual property of its authors, Yongchang Hui, Chijin
+Liu and Xiaojun Song. This repository is an independent open-source
+implementation and is not affiliated with them.</p>
+    <div class="pagefoot">
+      <div>
+        <strong>drgct 1.0.0</strong> · MIT licence · © 2026 Dr Merwan Roudane
+      </div>
+      <div>
+        <a href="https://github.com/merwanroudane/DRGCT">Source</a> ·
+        <a href="https://pypi.org/project/drgct/">PyPI</a> ·
+        <a href="https://arxiv.org/abs/2509.15798">Paper</a> ·
+        <a href="https://github.com/merwanroudane/DRGCT/issues">Report an issue</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<aside class="toc"><div class="group">On this page</div>
+  <a href="#where-to-start">Where to start</a>
+  <a href="#the-problem-this-solves">The problem this solves</a>
+  <a href="#how-it-works-in-one-screen">How it works, in one screen</a>
+  <a href="#sixty-seconds">Sixty seconds</a>
+  <a href="#does-it-work-yes-and-here-is-the-evidence">Does it work? Yes — and here is the evidence</a>
+  <a href="#two-real-applications">Two real applications</a>
+  <a href="#the-one-caveat-you-must-not-skip">The one caveat you must not skip</a>
+  <a href="#what-is-in-the-package">What is in the package</a>
+  <a href="#honest-limitations">Honest limitations</a>
+  <a href="#citation">Citation</a>
+</aside>
+
+</div>
+</body>
+</html>

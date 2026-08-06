@@ -1,0 +1,9 @@
+FRED id,Series,Transformation,Obs.,ADF p,KPSS p,Stationary
+INDPRO,Industrial production,100 x dlog,801,0.0,0.0186,no
+CPIAUCSL,CPI inflation,100 x dlog,801,0.0261,0.01,no
+PCEPI,PCE inflation,100 x dlog,801,0.0402,0.01,no
+FEDFUNDS,Fed funds rate,first difference,801,0.0,0.1,yes
+M2SL,M2 money growth,100 x dlog,801,0.0,0.0782,yes
+UNRATE,Unemployment rate,first difference,801,0.0,0.1,yes
+PAYEMS,Nonfarm payrolls,100 x dlog,801,0.0,0.01,no
+WTISPLC,WTI oil price,100 x dlog,801,0.0,0.1,yes

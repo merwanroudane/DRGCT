@@ -1,0 +1,13 @@
+Causality direction,Index,Period,3,6,12
+CPI inflation -> Fed funds rate,MP to prices,Great Inflation 1959-1983,0.025,0.671,0.931
+CPI inflation -> Fed funds rate,MP to prices,Great Moderation 1984-2025,0.083,0.117,0.453
+CPI inflation -> M2 money growth,Money to prices,Great Inflation 1959-1983,0.35,0.631,0.638
+CPI inflation -> M2 money growth,Money to prices,Great Moderation 1984-2025,0.0,0.615,0.584
+Fed funds rate -> CPI inflation,MP to prices,Great Inflation 1959-1983,0.11,0.496,0.806
+Fed funds rate -> CPI inflation,MP to prices,Great Moderation 1984-2025,0.048,0.154,0.446
+Fed funds rate -> Industrial production,MP to output,Great Inflation 1959-1983,0.018,0.078,0.056
+Fed funds rate -> Industrial production,MP to output,Great Moderation 1984-2025,0.283,0.033,0.942
+Industrial production -> Fed funds rate,MP to output,Great Inflation 1959-1983,0.445,0.208,0.316
+Industrial production -> Fed funds rate,MP to output,Great Moderation 1984-2025,0.002,0.117,0.858
+M2 money growth -> CPI inflation,Money to prices,Great Inflation 1959-1983,0.361,0.077,0.755
+M2 money growth -> CPI inflation,Money to prices,Great Moderation 1984-2025,0.754,0.596,0.296

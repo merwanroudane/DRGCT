@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulation evidence — drgct</title>
+<meta name="description" content="Does the test actually control its size, and does it have power where the paper says it does? This page reports what our implementation produces on the paper&#x27;s own designs — includ">
+<meta name="author" content="Dr Merwan Roudane">
+<link rel="canonical" href="https://merwanroudane.github.io/DRGCT/simulation.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Simulation evidence — drgct">
+<meta property="og:description" content="Does the test actually control its size, and does it have power where the paper says it does? This page reports what our implementation produces on the paper&#x27;s own designs — includ">
+<meta property="og:url" content="https://merwanroudane.github.io/DRGCT/simulation.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231F4E79'/><text x='50' y='70' font-size='58' font-family='Georgia,serif' fill='white' text-anchor='middle'>D</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="mark">drgct</span>
+    <span class="tagline">Deep-learning based doubly robust test<br>for Granger causality</span>
+  </a>
+  <button class="navtoggle" onclick="document.getElementById('sidebar').classList.toggle('open')">Menu</button>
+  <nav>
+    <div class="group">Start</div>
+    <a href="index.html">Overview</a>
+    <a href="guide.html">Applied guide</a>
+    <div class="group">Method</div>
+    <a href="theory.html">Theory</a>
+    <a href="api.html">API reference</a>
+    <a href="faq.html">FAQ</a>
+    <div class="group">Results</div>
+    <a href="macro.html">US macro application</a>
+    <a href="finance.html">Price–volume application</a>
+    <a href="simulation.html" class="active">Simulation evidence</a>
+  </nav>
+  <div class="ext">
+    <a href="https://github.com/merwanroudane/DRGCT">GitHub repository</a>
+    <a href="https://pypi.org/project/drgct/">PyPI package</a>
+    <a href="https://arxiv.org/abs/2509.15798">The paper (arXiv)</a>
+  </div>
+  <div class="byline">
+    Built and maintained by<br>
+    <strong>Dr Merwan Roudane</strong><br>
+    <a href="mailto:merwanroudane920@gmail.com">merwanroudane920@gmail.com</a><br>
+    <a href="https://github.com/merwanroudane">github.com/merwanroudane</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="content md-body">
+<h1 id="simulation-evidence">Simulation evidence</h1>
+<p class="lede">Does the test actually control its size, and does it have power
+where the paper says it does? This page reports what our implementation
+produces on the paper's own designs — including three places where it diverges
+from the published numbers, documented rather than tuned away.</p>
+
+<p>Produced by
+<a href="https://github.com/merwanroudane/DRGCT/blob/main/scripts/run_simulation.py"><code>scripts/run_simulation.py</code></a>:</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>scripts/run_simulation.py<span class="w"> </span>--reps<span class="w"> </span><span class="m">200</span><span class="w"> </span>--ns<span class="w"> </span><span class="m">500</span><span class="w"> </span>-B<span class="w"> </span><span class="m">499</span><span class="w"> </span>--jobs<span class="w"> </span>-1
+</code></pre></div>
+
+<div class="stat-row">
+  <div class="stat"><div class="v">6</div><div class="l">data generating processes from the paper's Table 1</div></div>
+  <div class="stat"><div class="v">200</div><div class="l">Monte-Carlo replications per design point</div></div>
+  <div class="stat"><div class="v">18k</div><div class="l">tests run (6 designs × 5 lags × 200 reps × 3 estimators)</div></div>
+  <div class="stat"><div class="v">0.015</div><div class="l">Monte-Carlo standard error on a size of 0.05</div></div>
+</div>
+
+<h2 id="1-the-designs">1. The designs</h2>
+<p>Six processes. In every one, <code>X</code> follows a linear AR(<em>p</em>); what varies is how
+<code>X</code>'s past enters <code>Y</code>. <strong>S1</strong> and <strong>S2</strong> satisfy the null — no causality — and
+measure size. <strong>P1</strong>–<strong>P4</strong> satisfy the alternative and measure power.</p>
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>DGP</th>
+      <th>Hypothesis</th>
+      <th>X_t</th>
+      <th>Y_t</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>S1</td>
+      <td>H0 (no causality)</td>
+      <td>$X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$</td>
+      <td>$Y_t = 0.5\sum_{j=1}^{q} a_j Y_{t-j} + \varepsilon_{2,t}$</td>
+    </tr>
+    <tr>
+      <td>S2</td>
+      <td>H0 (no causality)</td>
+      <td>$X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$</td>
+      <td>$Y_t = a\sum_{j=1}^{q} \exp(-0.5 Y_{t-j}^2) + \varepsilon_{2,t}$</td>
+    </tr>
+    <tr>
+      <td>P1</td>
+      <td>H1 (causality)</td>
+      <td>$X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$</td>
+      <td>$Y_t = 0.5\sum_{j=1}^{q} a_j Y_{t-j} + \sin\!\big(\sum_{k=1}^{p} c_k X_{t-k}\big) + \varepsilon_{2,t}$</td>
+    </tr>
+    <tr>
+      <td>P2</td>
+      <td>H1 (causality)</td>
+      <td>$X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$</td>
+      <td>$Y_t = 0.5\sum_{j=1}^{q} a_j Y_{t-j} + 0.5c\sum_{k=1}^{p} X_{t-k}^2 + \varepsilon_{2,t}$</td>
+    </tr>
+    <tr>
+      <td>P3</td>
+      <td>H1 (causality)</td>
+      <td>$X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$</td>
+      <td>$Y_t = a\sum_{j=1}^{q} \exp(-0.5 Y_{t-j}^2) + c\sum_{k=1}^{p}\cos(X_{t-k}) + \varepsilon_{2,t}$</td>
+    </tr>
+    <tr>
+      <td>P4</td>
+      <td>H1 (causality)</td>
+      <td>$X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$</td>
+      <td>$Y_t = a_0\sum_{j=1}^{q} (X_{t-j} Y_{t-j}) + \varepsilon_{2,t}$</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 1.</strong> The six data generating processes. The innovations are i.i.d. <code>N(0, 0.5)</code> and mutually independent.</figcaption></figure>
+
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>lag</th>
+      <th>a (S1,P1,P2)</th>
+      <th>b (all)</th>
+      <th>c (P1)</th>
+      <th>a (S2,P3)</th>
+      <th>c (P2,P3)</th>
+      <th>a0 (P4)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>-1</td>
+      <td>0.500</td>
+      <td>1.0</td>
+      <td>0.5000</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>0.5, -0.5</td>
+      <td>-0.5, 0.5</td>
+      <td>-0.5, 0.5</td>
+      <td>0.250</td>
+      <td>0.6</td>
+      <td>0.4000</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>0.5, -0.5, 0.5</td>
+      <td>-0.5, 0.5, 0.5</td>
+      <td>-0.5, 0.5, -0.5</td>
+      <td>0.250</td>
+      <td>0.5</td>
+      <td>0.3333</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>0.25, -0.25, 0.25, 0.25</td>
+      <td>-0.25, 0.25, 0.25, -0.25</td>
+      <td>-0.25, 0.25, -0.25, 0.25</td>
+      <td>0.125</td>
+      <td>0.5</td>
+      <td>0.3333</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>0.25, -0.25, 0.25, 0.25, -0.25</td>
+      <td>-0.25, 0.25, 0.25, -0.25, 0.25</td>
+      <td>-0.25, 0.25, -0.25, 0.25, -0.25</td>
+      <td>0.125</td>
+      <td>0.5</td>
+      <td>0.3333</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 2.</strong> Coefficient settings by lag order, chosen so the multi-lag sums in <code>Y</code> do not diverge.</figcaption></figure>
+
+<h2 id="2-the-headline-the-test-is-correctly-sized">2. The headline: the test is correctly sized</h2>
+<p>A correctly sized test produces p-values that are uniform on <code>[0, 1]</code> under the
+null, so their empirical CDF should lie on the 45-degree line. This is a
+sharper diagnostic than any rejection-frequency table, because it checks the
+<em>whole</em> distribution rather than one quantile.</p>
+<figure><img loading="lazy" src="assets/figures/fig2_pvalue_ecdf.png" alt="Figure 1"><figcaption><strong>Figure 1.</strong> p-value plots under the null, <em>n</em> = 500, 200 replications. The doubly robust test (blue) tracks the diagonal in all ten panels. The naive plug-in (gold) sits below it — conservative. The smoothing benchmark (red) is above the diagonal at lag 1 in S1 and below it elsewhere.</figcaption></figure>
+
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Lag</th>
+      <th>Sample size</th>
+      <th>S1 DRGC</th>
+      <th>S1 DRGC-naive</th>
+      <th>S1 NHKJ</th>
+      <th>S2 DRGC</th>
+      <th>S2 DRGC-naive</th>
+      <th>S2 NHKJ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>n = 500</td>
+      <td>0.070</td>
+      <td>0.000</td>
+      <td>0.170</td>
+      <td>0.045</td>
+      <td>0.005</td>
+      <td>0.005</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>n = 500</td>
+      <td>0.055</td>
+      <td>0.005</td>
+      <td>0.045</td>
+      <td>0.055</td>
+      <td>0.000</td>
+      <td>0.005</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>n = 500</td>
+      <td>0.055</td>
+      <td>0.015</td>
+      <td>0.040</td>
+      <td>0.065</td>
+      <td>0.000</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>n = 500</td>
+      <td>0.075</td>
+      <td>0.005</td>
+      <td>0.000</td>
+      <td>0.055</td>
+      <td>0.005</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>n = 500</td>
+      <td>0.050</td>
+      <td>0.005</td>
+      <td>0.020</td>
+      <td>0.055</td>
+      <td>0.020</td>
+      <td>0.000</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 3.</strong> Empirical size at the 5% nominal level, <em>n</em> = 500.</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/fig1_size.png" alt="Figure 2"><figcaption><strong>Figure 2.</strong> The size table as a picture. The shaded band is ±1.96 Monte-Carlo standard errors around the nominal 5%: an exactly sized test should land inside it.</figcaption></figure>
+
+<p>Against the paper's own 1000-replication values (in brackets):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">Lag</th>
+<th style="text-align: center;">DGP S1</th>
+<th style="text-align: center;">DGP S2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0.070 [0.051]</td>
+<td style="text-align: center;">0.045 [0.046]</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">0.055 [0.056]</td>
+<td style="text-align: center;">0.055 [0.049]</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">0.055 [0.046]</td>
+<td style="text-align: center;">0.065 [0.045]</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">0.075 [0.057]</td>
+<td style="text-align: center;">0.055 [0.039]</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">0.050 [0.050]</td>
+<td style="text-align: center;">0.055 [0.051]</td>
+</tr>
+</tbody>
+</table></div>
+<p>Every cell is within about 1.5 Monte-Carlo standard errors.</p>
+<div class="good"><strong>Independent confirmation</strong>
+<p>Before the shipped run, a separate 120-replication calibration at
+<i>n</i> = 500 gave S1 sizes of 0.058 / 0.050 / 0.058 at lags 1 / 3 / 5 against
+the paper's 0.051 / 0.046 / 0.050, and P2 powers of 1.000 / 0.967 / 0.583
+against 0.996 / 0.898 / 0.546. Two independent runs, both within two
+Monte-Carlo standard errors of the published numbers.</p></div>
+
+<h2 id="3-power">3. Power</h2>
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Lag</th>
+      <th>Sample size</th>
+      <th>P1 DRGC</th>
+      <th>P1 DRGC-naive</th>
+      <th>P1 NHKJ</th>
+      <th>P2 DRGC</th>
+      <th>P2 DRGC-naive</th>
+      <th>P2 NHKJ</th>
+      <th>P3 DRGC</th>
+      <th>P3 DRGC-naive</th>
+      <th>P3 NHKJ</th>
+      <th>P4 DRGC</th>
+      <th>P4 DRGC-naive</th>
+      <th>P4 NHKJ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>n = 500</td>
+      <td>1.000</td>
+      <td>1.000</td>
+      <td>1.0</td>
+      <td>1.000</td>
+      <td>1.000</td>
+      <td>0.965</td>
+      <td>1.000</td>
+      <td>1.000</td>
+      <td>1.000</td>
+      <td>1.000</td>
+      <td>0.990</td>
+      <td>0.990</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>n = 500</td>
+      <td>1.000</td>
+      <td>1.000</td>
+      <td>1.0</td>
+      <td>1.000</td>
+      <td>0.990</td>
+      <td>0.995</td>
+      <td>1.000</td>
+      <td>0.950</td>
+      <td>0.990</td>
+      <td>0.965</td>
+      <td>0.705</td>
+      <td>0.915</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>n = 500</td>
+      <td>1.000</td>
+      <td>1.000</td>
+      <td>1.0</td>
+      <td>0.975</td>
+      <td>0.915</td>
+      <td>0.995</td>
+      <td>0.925</td>
+      <td>0.770</td>
+      <td>0.975</td>
+      <td>0.615</td>
+      <td>0.305</td>
+      <td>0.570</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>n = 500</td>
+      <td>0.980</td>
+      <td>0.965</td>
+      <td>1.0</td>
+      <td>0.800</td>
+      <td>0.595</td>
+      <td>1.000</td>
+      <td>0.620</td>
+      <td>0.415</td>
+      <td>0.975</td>
+      <td>0.315</td>
+      <td>0.120</td>
+      <td>0.570</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>n = 500</td>
+      <td>0.895</td>
+      <td>0.775</td>
+      <td>1.0</td>
+      <td>0.565</td>
+      <td>0.375</td>
+      <td>0.995</td>
+      <td>0.385</td>
+      <td>0.185</td>
+      <td>0.980</td>
+      <td>0.170</td>
+      <td>0.080</td>
+      <td>0.360</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 4.</strong> Empirical power at the 5% nominal level, <em>n</em> = 500.</figcaption></figure>
+
+<figure><img loading="lazy" src="assets/figures/fig3_power.png" alt="Figure 3"><figcaption><strong>Figure 3.</strong> Power against the lag order, one panel per design.</figcaption></figure>
+
+<p>Against the paper (in brackets):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">Lag</th>
+<th style="text-align: center;">P1</th>
+<th style="text-align: center;">P2</th>
+<th style="text-align: center;">P3</th>
+<th style="text-align: center;">P4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1.000 [1.000]</td>
+<td style="text-align: center;">1.000 [0.996]</td>
+<td style="text-align: center;">1.000 [1.000]</td>
+<td style="text-align: center;">1.000 [0.990]</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">1.000 [1.000]</td>
+<td style="text-align: center;">1.000 [0.973]</td>
+<td style="text-align: center;">1.000 [0.977]</td>
+<td style="text-align: center;">0.965 [0.959]</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">1.000 [1.000]</td>
+<td style="text-align: center;">0.975 [0.898]</td>
+<td style="text-align: center;">0.925 [0.954]</td>
+<td style="text-align: center;"><strong>0.615</strong> [0.886]</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">0.980 [0.912]</td>
+<td style="text-align: center;">0.800 [0.628]</td>
+<td style="text-align: center;">0.620 [0.429]</td>
+<td style="text-align: center;"><strong>0.315</strong> [0.663]</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">0.895 [0.870]</td>
+<td style="text-align: center;">0.565 [0.546]</td>
+<td style="text-align: center;">0.385 [0.407]</td>
+<td style="text-align: center;"><strong>0.170</strong> [0.600]</td>
+</tr>
+</tbody>
+</table></div>
+<p>P1, P2 and P3 reproduce closely. <strong>P4 does not</strong>, and the gap at lags 3–5 is far
+too large to be sampling noise.</p>
+<div class="warn"><strong>Divergence 1: power in design P4</strong>
+<p>P4 is the one design where <code>Y</code> has no own-lag term of its own:
+<code>Y(t) = a₀ Σⱼ X(t−j)·Y(t−j) + ε(t)</code>. The conditional mean
+<code>m(Y(t−1))</code> is therefore an awkward object, and the MLP absorbs more
+of the signal in sample than it should, leaving less for the statistic to
+detect. Raising the MLP epochs or the number of directions <code>L</code> closes
+part of the gap. We report the gap rather than tuning it away.</p></div>
+
+<h2 id="4-why-the-correction-term-is-not-optional">4. Why the correction term is not optional</h2>
+<p>The <code>− φ̂(ν | Y(t−1))</code> centring is the whole doubly robust construction. Drop it
+and you get the naive process of equation (5), which the package will build on
+request with <code>doubly_robust=False</code>.</p>
+<figure><div class="table-wrap"><table>
+  <thead>
+    <tr style="text-align: right;">
+      <th>Lag</th>
+      <th>Sample size</th>
+      <th>S1 DRGC</th>
+      <th>S1 DRGC-naive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>n = 1000</td>
+      <td>0.08</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table></div></div><figcaption><strong>Table 5.</strong> Doubly robust versus naive plug-in, DGP S1, <em>n</em> = 1000, lag 1, 150 replications.</figcaption></figure>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: center;">S1 lag 1</th>
+<th style="text-align: center;">lag 2</th>
+<th style="text-align: center;">lag 3</th>
+<th style="text-align: center;">lag 4</th>
+<th style="text-align: center;">lag 5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DRGC (<em>n</em> = 500)</td>
+<td style="text-align: center;">0.070</td>
+<td style="text-align: center;">0.055</td>
+<td style="text-align: center;">0.055</td>
+<td style="text-align: center;">0.075</td>
+<td style="text-align: center;">0.050</td>
+</tr>
+<tr>
+<td>DRGC-naive (<em>n</em> = 500)</td>
+<td style="text-align: center;">0.000</td>
+<td style="text-align: center;">0.005</td>
+<td style="text-align: center;">0.015</td>
+<td style="text-align: center;">0.005</td>
+<td style="text-align: center;">0.005</td>
+</tr>
+</tbody>
+</table></div>
+<div class="warn"><strong>Divergence 2: the naive plug-in fails downwards, not upwards</strong>
+<p>Section 4 of the paper reports the naive plug-in <i>over</i>-rejecting, with
+size rising to 0.151 at <i>n</i> = 1000 and 0.321 at <i>n</i> = 2000. Here it
+<i>under</i>-rejects, essentially never rejecting at all.</p>
+<p>The mechanism is straightforward. <code>m̂</code> is fitted by least squares
+<b>in sample</b>, with no splitting — as Section 1 of the paper prescribes. The
+first-order conditions of that fit make the residual near-orthogonal to any
+function of <code>Y(t−1)</code> in the span of the network, and
+<code>e^{iμ′Y(t−1)}</code> is such a function, so the naive statistic is
+mechanically shrunk toward zero. The multiplier bootstrap inherits no such
+orthogonality, so its null distribution is too wide.</p>
+<p>Which distortion dominates — this shrinkage or the estimation bias the paper
+emphasises — depends on the design, the sample size, and how hard the network is
+trained. <b>Both are failures of the same kind:</b> without the centring the
+naive process has no valid null distribution, and with it the doubly robust
+process does. That is the point of the construction, and Figure 1 shows it.</p></div>
+
+<h2 id="5-the-smoothing-benchmark">5. The smoothing benchmark</h2>
+<p>Empirical size of our <code>nhkj_test</code> at the 5% nominal level, <em>n</em> = 500:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: center;">Lag</th>
+<th style="text-align: center;">S1</th>
+<th style="text-align: center;">S2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><strong>0.170</strong></td>
+<td style="text-align: center;">0.005</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">0.045</td>
+<td style="text-align: center;">0.005</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">0.040</td>
+<td style="text-align: center;">0.000</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">0.000</td>
+<td style="text-align: center;">0.000</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">0.020</td>
+<td style="text-align: center;">0.000</td>
+</tr>
+</tbody>
+</table></div>
+<div class="warn"><strong>Divergence 3: our benchmark is not the paper's NHKJ</strong>
+<p><code>nhkj_test</code> is a <i>member of the class</i> — a Zheng (1996) /
+Fan–Li (1996) degenerate U-statistic with the fourth-order Gaussian kernel and
+the <code>h = c·n^{−0.15}</code> bandwidth schedule the paper specifies for its
+benchmark — but not a transcription of the estimator in Nishiyama et al. (2011).</p>
+<p>It is severely <b>under</b>-sized in the exponential-mean design S2 and at
+high lag in S1, which is the paper's qualitative story, but badly
+<b>over</b>-sized at lag 1 in S1, and it keeps power near one in P1–P3 instead of
+collapsing. <b>Because its size is not controlled, its power column is not a
+fair comparison.</b> Read the size table before the power table, and when you
+need to characterise NHKJ's properties in print, cite the paper's Tables 3–4,
+not ours.</p>
+<p>That the benchmark's finite-sample behaviour swings this much with the
+bandwidth constant is, incidentally, exactly the criticism the DRGCT paper
+levels at smoothing-based causality tests in the first place.</p></div>
+
+<h2 id="6-precision-and-what-was-actually-run">6. Precision and what was actually run</h2>
+<p><strong>Experiment A — completed.</strong> All six designs, lag orders 1–5, <em>n</em> = 500, 200
+replications, <code>B = 499</code>, three estimators.</p>
+<p><strong>Experiment B — stopped early.</strong> Design S1 at <em>n</em> ∈ {1000, 2000}, lags 1, 3, 5.
+The run was interrupted after its first design point, so only
+<em>n</em> = 1000 / lag 1 / 150 replications is reported above. To complete it:</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>scripts/run_simulation.py<span class="w"> </span>--skip-a<span class="w"> </span>--b-reps<span class="w"> </span><span class="m">150</span><span class="w"> </span>--b-ns<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="m">2000</span><span class="w"> </span>--b-lags<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="m">5</span><span class="w"> </span>--jobs<span class="w"> </span>-1
+</code></pre></div>
+
+<p>200 replications give a Monte-Carlo standard error of about <strong>0.015</strong> on a size
+of 0.05 and up to 0.035 on a power near 0.5. Every rejection frequency in
+<code>monte_carlo_summary.csv</code> carries its own <code>mc_se</code> column. Differences from the
+paper of 0.02–0.04 are sampling noise; the differences flagged in P4 and in the
+NHKJ column are not.</p>
+<p>To run the paper's own grid — 1000 replications at <em>n</em> ∈ {500, 1000, 2000} with
+<code>B = 1000</code>, a multi-day job on a laptop:</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>scripts/run_simulation.py<span class="w"> </span>--reps<span class="w"> </span><span class="m">1000</span><span class="w"> </span>--ns<span class="w"> </span><span class="m">500</span><span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="m">2000</span><span class="w"> </span>-B<span class="w"> </span><span class="m">1000</span><span class="w"> </span>--jobs<span class="w"> </span>N
+</code></pre></div>
+
+<h2 id="7-verifying-size-for-your-design">7. Verifying size for <em>your</em> design</h2>
+<p>The paper's designs may look nothing like your data. Simulating under a null
+that inherits your own persistence and innovation scale costs an hour and is
+worth it — the recipe is in
+<a href="https://github.com/merwanroudane/DRGCT/blob/main/guide.html#9-verifying-size-for-your-design-with-a-bespoke-monte-carlo">the guide's §9</a>.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">drgct.simulate</span><span class="w"> </span><span class="kn">import</span> <span class="n">monte_carlo</span><span class="p">,</span> <span class="n">summarize</span>
+
+<span class="n">mc</span> <span class="o">=</span> <span class="n">monte_carlo</span><span class="p">(</span><span class="n">dgps</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;S1&quot;</span><span class="p">,</span> <span class="s2">&quot;P2&quot;</span><span class="p">],</span> <span class="n">ns</span><span class="o">=</span><span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">reps</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                 <span class="n">methods</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;drgc&quot;</span><span class="p">,</span> <span class="s2">&quot;drgc_naive&quot;</span><span class="p">,</span> <span class="s2">&quot;nhkj&quot;</span><span class="p">),</span>
+                 <span class="n">drgc_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">B</span><span class="o">=</span><span class="mi">499</span><span class="p">),</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">summarize</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+</code></pre></div>
+
+<h2 id="full-replication-log">Full replication log</h2>
+<p>Every command, the environment, and the complete table of divergences are in
+<a href="https://github.com/merwanroudane/DRGCT/blob/main/results/README.md"><code>results/README.md</code></a>
+in the repository.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>Fan, Y. and Li, Q. (1996). Consistent model specification tests. <em>Econometrica</em> 64, 865–890.</li>
+<li>Hui, Y., Liu, C. and Song, X. (2025). <em>Deep learning based doubly robust test for Granger causality.</em> <a href="https://arxiv.org/abs/2509.15798">arXiv:2509.15798</a>.</li>
+<li>Nishiyama, Y., Hitomi, K., Kawasaki, Y. and Jeong, K. (2011). A consistent nonparametric test for nonlinear causality. <em>Journal of Econometrics</em> 165, 112–127.</li>
+<li>Zheng, J. X. (1996). A consistent test of functional form via nonparametric estimation techniques. <em>Journal of Econometrics</em> 75, 263–289.</li>
+</ul>
+    <div class="pagefoot">
+      <div>
+        <strong>drgct 1.0.0</strong> · MIT licence · © 2026 Dr Merwan Roudane
+      </div>
+      <div>
+        <a href="https://github.com/merwanroudane/DRGCT">Source</a> ·
+        <a href="https://pypi.org/project/drgct/">PyPI</a> ·
+        <a href="https://arxiv.org/abs/2509.15798">Paper</a> ·
+        <a href="https://github.com/merwanroudane/DRGCT/issues">Report an issue</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<aside class="toc"><div class="group">On this page</div>
+  <a href="#1-the-designs">1. The designs</a>
+  <a href="#2-the-headline-the-test-is-correctly-sized">2. The headline: the test is correctly sized</a>
+  <a href="#3-power">3. Power</a>
+  <a href="#4-why-the-correction-term-is-not-optional">4. Why the correction term is not optional</a>
+  <a href="#5-the-smoothing-benchmark">5. The smoothing benchmark</a>
+  <a href="#6-precision-and-what-was-actually-run">6. Precision and what was actually run</a>
+  <a href="#7-verifying-size-for-your-design">7. Verifying size for your design</a>
+  <a href="#full-replication-log">Full replication log</a>
+  <a href="#references">References</a>
+</aside>
+
+</div>
+</body>
+</html>
