@@ -1,0 +1,22 @@
+# Ship a source distribution that can actually be verified and re-run.
+include LICENSE README.md CHANGELOG.md CITATION.cff
+include pyproject.toml
+
+recursive-include src/drgct/data *.csv *.md
+include src/drgct/py.typed
+
+recursive-include tests *.py
+recursive-include docs *.md
+recursive-include examples *.py *.md
+recursive-include scripts *.py *.md
+include data/fetch_data.py data/README.md
+
+# The rendered figures and tables live in the repository, not in the sdist:
+# they are ~4 MB of PDFs and PNGs and are fully regenerable from scripts/.
+prune results
+prune results_example1
+prune results_example2
+prune results_example3
+prune results_example4
+
+global-exclude *.py[cod] __pycache__ .DS_Store

@@ -26,7 +26,7 @@ smoothing-based benchmark the paper compares against, and a set of
 journal-quality tables and figures that come out as LaTeX, Markdown, CSV, PDF
 and PNG in a single call.
 
-> ### 📘 New to the method? **Start with the [Applied Researcher's Guide](docs/GUIDE.md).**
+> ### 📘 New to the method? **Start with the [Applied Researcher's Guide](https://github.com/merwanroudane/DRGCT/blob/main/docs/GUIDE.md).**
 > It walks you from a raw CSV to a finished results section, with complete
 > runnable code at every step, and a write-up template at the end.
 
@@ -223,7 +223,7 @@ distribution. With it, the bias depends on the **product** `‖m̂ − m‖ ·
 ‖φ̂ − φ‖`, so two estimators each converging slower than `n^{-1/2}` still
 deliver a valid test. You can run the naive version yourself and watch its
 size break — in our implementation it breaks *downwards* rather than upwards,
-see [`results/README.md`](results/README.md):
+see [`results/README.md`](https://github.com/merwanroudane/DRGCT/blob/main/results/README.md):
 
 ```python
 drgc_test(x, y, lag=5, doubly_robust=False)      # the naive plug-in of equation (5)
@@ -234,7 +234,7 @@ two networks are trained exactly once per test. With `n = 750`, `L = 20`,
 `B = 999`, the bootstrap costs about 15 ms against roughly 10 s for the
 networks. So never economise on `B`.
 
-Full derivation and a line-by-line source map: [`docs/THEORY.md`](docs/THEORY.md).
+Full derivation and a line-by-line source map: [`docs/THEORY.md`](https://github.com/merwanroudane/DRGCT/blob/main/docs/THEORY.md).
 
 ---
 
@@ -287,7 +287,7 @@ A 120-replication calibration run at `n = 500` against the paper's own numbers
 Every difference is within about two Monte-Carlo standard errors
 (≈ 0.02 for size at 120 replications). The full run shipped in `results/` uses
 more replications and adds the naive plug-in and the smoothing benchmark; see
-[`results/README.md`](results/README.md).
+[`results/README.md`](https://github.com/merwanroudane/DRGCT/blob/main/results/README.md).
 
 ---
 
@@ -320,7 +320,7 @@ python data/fetch_data.py --tickers ^FTSE=ftse100 ^GDAXI=dax
 ```
 
 Provenance is recorded in
-[`src/drgct/data/SOURCES.md`](src/drgct/data/SOURCES.md). Yahoo! Finance
+[`src/drgct/data/SOURCES.md`](https://github.com/merwanroudane/DRGCT/blob/main/src/drgct/data/SOURCES.md). Yahoo! Finance
 truncates the CSI 300 *index* series (`000300.SS`) to roughly the last three
 years, so the largest exchange-traded tracker is used instead; the downloader
 tries the index first and records which source it used. Drop in your own
@@ -348,16 +348,16 @@ designs, `n = 500`. The doubly robust test (blue) sits on the 45-degree line at
 every lag order — correct size. The naive plug-in (gold) and the smoothing
 benchmark (red) do not.
 
-<p align="center"><img src="results/figures/fig2_pvalue_ecdf.png" width="900"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/merwanroudane/DRGCT/main/results/figures/fig2_pvalue_ecdf.png" width="900"></p>
 
 ### Size and power against the lag order
 
-<p align="center"><img src="results/figures/fig1_size.png" width="620"></p>
-<p align="center"><img src="results/figures/fig3_power.png" width="700"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/merwanroudane/DRGCT/main/results/figures/fig1_size.png" width="620"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/merwanroudane/DRGCT/main/results/figures/fig3_power.png" width="700"></p>
 
 ### Bootstrap null distribution — makes any single p-value auditable
 
-<p align="center"><img src="results/figures/fig8_bootstrap_null.png" width="720"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/merwanroudane/DRGCT/main/results/figures/fig8_bootstrap_null.png" width="720"></p>
 
 ### The empirical process across the `L` random directions
 
@@ -365,27 +365,27 @@ Which direction in `W` drives the rejection? Here exactly one of twenty
 escapes the bootstrap envelope — a warning sign, and the reason for the
 stability check below.
 
-<p align="center"><img src="results/figures/fig9_empirical_process.png" width="780"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/merwanroudane/DRGCT/main/results/figures/fig9_empirical_process.png" width="780"></p>
 
 ### p-values across lag orders, indices and sub-samples — Table 6 as a picture
 
-<p align="center"><img src="results/figures/fig6_pvalue_heatmap.png" width="820"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/merwanroudane/DRGCT/main/results/figures/fig6_pvalue_heatmap.png" width="820"></p>
 
 ### Is the conclusion an artefact of the random directions?
 
-<p align="center"><img src="results/figures/fig13_stability.png" width="720"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/merwanroudane/DRGCT/main/results/figures/fig13_stability.png" width="720"></p>
 
 ### The data
 
-<p align="center"><img src="results/figures/fig5_data_overview.png" width="900"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/merwanroudane/DRGCT/main/results/figures/fig5_data_overview.png" width="900"></p>
 
 ### Rolling-window causality — when does it switch on?
 
-<p align="center"><img src="results/figures/fig12_rolling_spx500.png" width="760"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/merwanroudane/DRGCT/main/results/figures/fig12_rolling_spx500.png" width="760"></p>
 
 Also available: `plot_size`, `plot_power`, `plot_pvalue_ecdf` (the
 Davidson–MacKinnon p-value plot), `plot_lag_profile`, `plot_mdn_fit` and
-`plot_training_curves`. See [`docs/SYNTAX.md`](docs/SYNTAX.md#9-figures--drgctplots).
+`plot_training_curves`. See [`docs/SYNTAX.md`](https://github.com/merwanroudane/DRGCT/blob/main/docs/SYNTAX.md#9-figures--drgctplots).
 
 ---
 
@@ -462,7 +462,7 @@ The six knobs that matter, with the paper's values as the defaults:
 | `mlp=`, `mdn=` | width `5·lag`, depth 1 | `n > 2000` → depth 2, width `10·lag` |
 | `w_lower`, `w_upper` | −1, 1 | to probe finer oscillations in `W` |
 
-Every argument is documented in [`docs/SYNTAX.md`](docs/SYNTAX.md).
+Every argument is documented in [`docs/SYNTAX.md`](https://github.com/merwanroudane/DRGCT/blob/main/docs/SYNTAX.md).
 
 ---
 
@@ -482,12 +482,12 @@ drgct app --indices spx500 --lag-max 10 --jobs 10
 
 | Document | For |
 |---|---|
-| **[docs/GUIDE.md](docs/GUIDE.md)** | **The applied researcher's guide** — raw data to finished results section, with a reporting checklist and a write-up template |
-| [docs/SYNTAX.md](docs/SYNTAX.md) | Complete API reference: every function, argument and return field |
-| [docs/THEORY.md](docs/THEORY.md) | Equation-by-equation map from the paper to the code, assumptions, deliberate implementation choices |
-| [docs/FAQ.md](docs/FAQ.md) | Short answers to the recurring questions |
-| [results/README.md](results/README.md) | Exactly how the shipped results were produced, and where they differ from the paper |
-| [examples/](examples) | `01_quickstart` · `02_simulation_size_power` · `03_real_data_price_volume` · `04_your_own_data` |
+| **[docs/GUIDE.md](https://github.com/merwanroudane/DRGCT/blob/main/docs/GUIDE.md)** | **The applied researcher's guide** — raw data to finished results section, with a reporting checklist and a write-up template |
+| [docs/SYNTAX.md](https://github.com/merwanroudane/DRGCT/blob/main/docs/SYNTAX.md) | Complete API reference: every function, argument and return field |
+| [docs/THEORY.md](https://github.com/merwanroudane/DRGCT/blob/main/docs/THEORY.md) | Equation-by-equation map from the paper to the code, assumptions, deliberate implementation choices |
+| [docs/FAQ.md](https://github.com/merwanroudane/DRGCT/blob/main/docs/FAQ.md) | Short answers to the recurring questions |
+| [results/README.md](https://github.com/merwanroudane/DRGCT/blob/main/results/README.md) | Exactly how the shipped results were produced, and where they differ from the paper |
+| [examples/](https://github.com/merwanroudane/DRGCT/blob/main/examples) | `01_quickstart` · `02_simulation_size_power` · `03_real_data_price_volume` · `04_your_own_data` |
 
 ---
 
@@ -507,7 +507,7 @@ Stated up front so that nobody is surprised.
    Treat it as a reference point, describe it in print as "a smoothing-based
    nonparametric benchmark", and quote the paper's own Table 3–4 numbers when
    you want NHKJ's properties. Detail in
-   [`results/README.md`](results/README.md).
+   [`results/README.md`](https://github.com/merwanroudane/DRGCT/blob/main/results/README.md).
 
 2. **The naive plug-in fails, but downwards.** Section 4 of the paper reports
    the naive deep plug-in *over*-rejecting (size 0.151 at `n = 1000`, 0.321 at
@@ -517,7 +517,7 @@ Stated up front so that nobody is surprised.
    naive statistic while leaving its bootstrap null untouched. The conclusion
    is the same (the naive plug-in is not correctly sized, the doubly robust
    one is) but the direction differs, and
-   [`results/README.md`](results/README.md) explains why.
+   [`results/README.md`](https://github.com/merwanroudane/DRGCT/blob/main/results/README.md) explains why.
 
 3. **Shipped simulations use fewer replications than the paper, and one
    experiment is partial.** The paper runs 1000 replications at
@@ -538,7 +538,7 @@ Stated up front so that nobody is surprised.
 5. **Choices the paper leaves open.** The support of `(μ, ν)`, the optimiser,
    the multiplier distribution, the multivariate form of the MDN for `p > 1`,
    and whether `N(0, 0.5)` denotes a variance or a standard deviation. Each is
-   documented in [`docs/THEORY.md §8`](docs/THEORY.md#8-deliberate-implementation-choices)
+   documented in [`docs/THEORY.md §8`](https://github.com/merwanroudane/DRGCT/blob/main/docs/THEORY.md#8-deliberate-implementation-choices)
    and each is exposed as an argument.
 
 6. **`drgc_stability` is an addition, not part of the paper.** See
@@ -592,7 +592,7 @@ Please cite the paper. Cite the software too, if it saved you time.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/merwanroudane/DRGCT/blob/main/LICENSE).
 
 Maintained by **Dr Merwan Roudane** ·
 [merwanroudane920@gmail.com](mailto:merwanroudane920@gmail.com) ·
