@@ -10,7 +10,9 @@ with a full set of journal-ready tables and figures.
 
 Method: Hui, Y., Liu, C. and Song, X. (2025), *Deep learning based doubly
 robust test for Granger causality*, [arXiv:2509.15798](https://arxiv.org/abs/2509.15798).
-Software: [`drgct`](https://github.com/merwanroudane/DRGCT).
+Software: [`drgct`](https://pypi.org/project/drgct/) —
+`pip install drgct` — source at
+[github.com/merwanroudane/DRGCT](https://github.com/merwanroudane/DRGCT).
 
 ---
 
@@ -72,10 +74,14 @@ CSV; all figures as vector PDF plus a 400-dpi PNG.
 ## 2. Installation and a 30-second check
 
 ```bash
-pip install "drgct[data] @ git+https://github.com/merwanroudane/DRGCT.git"
+pip install "drgct[data]"
 ```
 
-or, from a clone:
+The `[data]` extra adds `yfinance`, used only by `data/fetch_data.py` to
+refresh the bundled market series; plain `pip install drgct` is enough to run
+every test and every example in this guide.
+
+Or, from a clone, if you want to modify the package:
 
 ```bash
 git clone https://github.com/merwanroudane/DRGCT.git

@@ -1,6 +1,7 @@
 # `drgct` — Complete Syntax Reference
 
-Every public function, every argument, every return field. Version 1.0.0.
+Every public function, every argument, every return field. Version 1.0.0
+(`pip install drgct` — [PyPI](https://pypi.org/project/drgct/)).
 
 For the *how-to*, read [`GUIDE.md`](GUIDE.md). For the *why*, read
 [`THEORY.md`](THEORY.md).

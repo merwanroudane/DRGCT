@@ -54,6 +54,7 @@ all = ["yfinance>=0.2", "pandas-datareader>=0.10", "pytest>=7", "pytest-cov", "r
 
 [project.urls]
 Homepage = "https://github.com/merwanroudane/DRGCT"
+"PyPI" = "https://pypi.org/project/drgct/"
 Documentation = "https://github.com/merwanroudane/DRGCT/blob/main/docs/GUIDE.md"
 Changelog = "https://github.com/merwanroudane/DRGCT/blob/main/CHANGELOG.md"
 Repository = "https://github.com/merwanroudane/DRGCT"

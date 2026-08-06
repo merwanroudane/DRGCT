@@ -5,6 +5,8 @@ All notable changes to `drgct`. This project follows
 
 ## [1.0.0] — 2026-08-06
 
+Published to PyPI: <https://pypi.org/project/drgct/1.0.0/> — `pip install drgct`
+
 First public release: a complete implementation of
 
 > Hui, Y., Liu, C. and Song, X. (2025). *Deep learning based doubly robust

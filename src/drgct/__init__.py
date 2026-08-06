@@ -56,6 +56,11 @@ Public API
 ``check_stationarity``, ``set_seed``, ``build_lag_design``
     Utilities (:mod:`drgct.utils`).
 
+Install
+-------
+``pip install drgct``  (or ``pip install "drgct[data]"`` for the data
+downloader).  Package: https://pypi.org/project/drgct/
+
 Full guide: https://github.com/merwanroudane/DRGCT/blob/main/docs/GUIDE.md
 """
 

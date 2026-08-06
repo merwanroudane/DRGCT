@@ -5,11 +5,13 @@
 </p>
 
 <p align="center">
-  <a href="#installation"><img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white"></a>
+  <a href="https://pypi.org/project/drgct/"><img alt="PyPI" src="https://img.shields.io/pypi/v/drgct?color=1F4E79&label=PyPI&logo=pypi&logoColor=white"></a>
+  <a href="https://pypi.org/project/drgct/"><img alt="downloads" src="https://img.shields.io/pypi/dm/drgct?color=3E7B5E&label=downloads"></a>
+  <a href="https://pypi.org/project/drgct/"><img alt="python" src="https://img.shields.io/pypi/pyversions/drgct?logo=python&logoColor=white"></a>
   <a href="https://pytorch.org"><img alt="pytorch" src="https://img.shields.io/badge/PyTorch-CPU%20is%20enough-EE4C2C?logo=pytorch&logoColor=white"></a>
-  <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-2E4F68"></a>
+  <a href="https://github.com/merwanroudane/DRGCT/blob/main/LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-2E4F68"></a>
   <a href="https://arxiv.org/abs/2509.15798"><img alt="paper" src="https://img.shields.io/badge/paper-arXiv%3A2509.15798-B4462F"></a>
-  <a href="docs/GUIDE.md"><img alt="guide" src="https://img.shields.io/badge/docs-applied%20guide-3E7B5E"></a>
+  <a href="https://github.com/merwanroudane/DRGCT/blob/main/docs/GUIDE.md"><img alt="guide" src="https://img.shields.io/badge/docs-applied%20guide-3E7B5E"></a>
 </p>
 
 ---
@@ -86,8 +88,17 @@ From Table 4, at `n = 500` with 5 lags in design P2, the benchmark's power is
 
 ## Installation
 
+From [PyPI](https://pypi.org/project/drgct/):
+
 ```bash
-pip install "drgct[data] @ git+https://github.com/merwanroudane/DRGCT.git"
+pip install drgct
+```
+
+With the optional data extra, which adds `yfinance` so you can refresh or
+extend the bundled market data:
+
+```bash
+pip install "drgct[data]"
 ```
 
 From a clone, for development:
@@ -597,6 +608,9 @@ MIT — see [LICENSE](https://github.com/merwanroudane/DRGCT/blob/main/LICENSE).
 Maintained by **Dr Merwan Roudane** ·
 [merwanroudane920@gmail.com](mailto:merwanroudane920@gmail.com) ·
 [github.com/merwanroudane](https://github.com/merwanroudane)
+
+Package: <https://pypi.org/project/drgct/> ·
+Source: <https://github.com/merwanroudane/DRGCT>
 
 The method is the intellectual property of its authors, Yongchang Hui, Chijin
 Liu and Xiaojun Song; this repository is an independent open-source

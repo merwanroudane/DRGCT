@@ -10,6 +10,8 @@ and writes its output to its own `results_example*/` folder.
 | [`03_real_data_price_volume.py`](03_real_data_price_volume.py) | ~4 min on 8 cores | The price–volume application on the bundled CSI 300 data: stationarity screen, descriptive table, a two-directional lag scan over 1–10, benchmarks, a stability check, and all the figures. |
 | [`04_your_own_data.py`](04_your_own_data.py) | ~5 min on 8 cores | **The template to copy.** Edit one CONFIG block and point it at your CSV. Ships with a synthetic macro dataset (an asymmetric policy shock transmitting to output at lag 6) so it runs out of the box. |
 
+Install first if you have not already: `pip install "drgct[data]"`.
+
 ```bash
 python examples/01_quickstart.py
 python examples/02_simulation_size_power.py

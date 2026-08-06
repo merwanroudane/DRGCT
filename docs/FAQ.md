@@ -198,9 +198,11 @@ import drgct
 print(drgct.cite("bibtex"))
 ```
 
-### Where do I report a bug?
+### Where do I get it, and where do I report a bug?
 
-<https://github.com/merwanroudane/DRGCT/issues>. Please include the output of
+Install from PyPI: <https://pypi.org/project/drgct/> (`pip install drgct`).
+Report bugs at <https://github.com/merwanroudane/DRGCT/issues>. Please include
+the output of
 
 ```python
 import sys, torch, numpy, drgct
