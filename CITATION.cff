@@ -1,0 +1,49 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the software and the original paper."
+title: "drgct: Deep-learning based doubly robust Granger causality testing in Python"
+version: 1.0.0
+license: MIT
+repository-code: "https://github.com/merwanroudane/DRGCT"
+authors:
+  - family-names: Roudane
+    given-names: Merwan
+    email: merwanroudane920@gmail.com
+    orcid: ""
+keywords:
+  - Granger causality
+  - doubly robust inference
+  - deep learning
+  - mixture density network
+  - multiplier bootstrap
+  - econometrics
+references:
+  - type: article
+    title: "Deep learning based doubly robust test for Granger causality"
+    authors:
+      - family-names: Hui
+        given-names: Yongchang
+      - family-names: Liu
+        given-names: Chijin
+      - family-names: Song
+        given-names: Xiaojun
+    year: 2025
+    journal: "arXiv preprint"
+    number: "2509.15798"
+    url: "https://arxiv.org/abs/2509.15798"
+  - type: article
+    title: "A consistent nonparametric test for nonlinear causality: Specification in time series regression"
+    authors:
+      - family-names: Nishiyama
+        given-names: Yoshihiko
+      - family-names: Hitomi
+        given-names: Kohtaro
+      - family-names: Kawasaki
+        given-names: Yoshinori
+      - family-names: Jeong
+        given-names: Kiho
+    year: 2011
+    journal: "Journal of Econometrics"
+    volume: 165
+    start: 112
+    end: 127
+    doi: "10.1016/j.jeconom.2011.05.010"

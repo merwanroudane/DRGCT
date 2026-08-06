@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+
+# Testing / linting
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Scratch runs.  The curated output in results/ IS committed -- including the
+# replication-level CSVs -- so every table and figure can be rebuilt without
+# re-running the Monte Carlo.  See results/README.md.
+results_example*/
+results/scratch/
+*.pt
+*.pth

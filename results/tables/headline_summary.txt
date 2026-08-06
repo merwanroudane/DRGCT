@@ -1,0 +1,22 @@
+========================================================================
+  Doubly Robust Granger Causality Test (DRGCT)
+  Hui, Liu & Song (2025), arXiv:2509.15798 -- Algorithm 1
+========================================================================
+  H0 : P_t does not Granger-cause V_t in mean
+  Construction        : doubly robust
+  Lag orders          : p = 10 (cause), q = 10 (effect)
+  Sample              : n = 754,  effective n - q = 744
+  MDN components G    : 10
+  (mu, nu) pairs L    : 20   drawn U[-1.0, 1.0]
+  Pseudo-samples M    : 20
+  Bootstrap B         : 999   multipliers: rademacher
+  Network (MLP/MDN)   : width 50/50, depth 1/1
+------------------------------------------------------------------------
+  KS_n statistic      : 1.479997
+  Bootstrap p-value   : 0.0080 ***
+  Critical values     : 1%: 1.4308  5%: 1.2975  10%: 1.2109
+  Decision at 5%    : REJECT H0
+------------------------------------------------------------------------
+  Runtime             : 11.13 s
+  Signif. codes: *** 1%   ** 5%   * 10%
+========================================================================

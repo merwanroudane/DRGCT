@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Data generating processes}
+\label{tab:dgps}
+\small
+\begin{tabular}{llll}
+\toprule
+DGP & Hypothesis & X\_t & Y\_t \\
+\midrule
+S1 & H0 (no causality) & $X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$ & $Y_t = 0.5\sum_{j=1}^{q} a_j Y_{t-j} + \varepsilon_{2,t}$ \\
+S2 & H0 (no causality) & $X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$ & $Y_t = a\sum_{j=1}^{q} \exp(-0.5 Y_{t-j}^2) + \varepsilon_{2,t}$ \\
+P1 & H1 (causality) & $X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$ & $Y_t = 0.5\sum_{j=1}^{q} a_j Y_{t-j} + \sin\!\big(\sum_{k=1}^{p} c_k X_{t-k}\big) + \varepsilon_{2,t}$ \\
+P2 & H1 (causality) & $X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$ & $Y_t = 0.5\sum_{j=1}^{q} a_j Y_{t-j} + 0.5c\sum_{k=1}^{p} X_{t-k}^2 + \varepsilon_{2,t}$ \\
+P3 & H1 (causality) & $X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$ & $Y_t = a\sum_{j=1}^{q} \exp(-0.5 Y_{t-j}^2) + c\sum_{k=1}^{p}\cos(X_{t-k}) + \varepsilon_{2,t}$ \\
+P4 & H1 (causality) & $X_t = 0.5\sum_{k=1}^{p} b_k X_{t-k} + \varepsilon_{1,t}$ & $Y_t = a_0\sum_{j=1}^{q} (X_{t-j} Y_{t-j}) + \varepsilon_{2,t}$ \\
+\bottomrule
+\end{tabular}
+
+\begin{minipage}{\linewidth}\footnotesize
+$\varepsilon_{1,t}$ and $\varepsilon_{2,t}$ are i.i.d. $N(0,0.5)$ and mutually independent.  S1 and S2 satisfy the null of no Granger causality; P1--P4 satisfy the alternative.  Throughout, lag $=p=q$.
+\end{minipage}
+\end{table}

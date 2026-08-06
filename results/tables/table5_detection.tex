@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Price--volume Granger causality detection}
+\label{tab:detection}
+\small
+\begin{tabular}{lllll}
+\toprule
+Causality direction & Period & SPX 500 & CSI 300 & NI 225 \\
+\midrule
+P\_t -> V\_t & 2019-2022 & $\times$ & \checkmark & \checkmark \\
+P\_t -> V\_t & 2020-2023 & $\times$ & \checkmark & \checkmark \\
+P\_t -> V\_t & 2021-2024 & $\times$ & \checkmark & \checkmark \\
+V\_t -> P\_t & 2019-2022 & $\times$ & \checkmark & $\times$ \\
+V\_t -> P\_t & 2020-2023 & $\times$ & $\times$ & $\times$ \\
+V\_t -> P\_t & 2021-2024 & $\times$ & $\times$ & $\times$ \\
+\bottomrule
+\end{tabular}
+
+\begin{minipage}{\linewidth}\footnotesize
+A tick marks rejection of the null of non-causality at the 5\% level for at least one lag order between 1 and 10; a cross marks no rejection at any lag.
+\end{minipage}
+\end{table}

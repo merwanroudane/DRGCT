@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\caption{Empirical size of the doubly robust test versus a naive deep plug-in (DGP S1)}
+\label{tab:naive}
+\small
+\begin{tabular}{clll}
+\toprule
+Lag & Sample size & S1 DRGC & S1 DRGC-naive \\
+\midrule
+1 & n = 1000 & 0.080 & 0.000 \\
+\bottomrule
+\end{tabular}
+
+\begin{minipage}{\linewidth}\footnotesize
+DRGC-naive builds the empirical process from equation (5), i.e. without subtracting $\hat{arphi}(
+u\mid Y_{t-1})$.  150 Monte-Carlo replications, $B=499$, nominal level 5\%.  Only this design point was run; see 	exttt{results/README.md}.
+\end{minipage}
+\end{table}
